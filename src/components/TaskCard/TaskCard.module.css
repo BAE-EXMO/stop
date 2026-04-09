@@ -1,0 +1,187 @@
+.card {
+  background: #151515;
+  border-radius: 20px;
+  border: 1px solid #2a2a2a;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.card[data-completed="true"] {
+  background: #0d1a0d;
+  border-color: #2B8A3E44;
+  opacity: 0.6;
+}
+
+.categoryStripe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--category-color);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.rankBadge {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 900;
+  font-family: 'Noto Sans KR', sans-serif;
+  flex-shrink: 0;
+  background: var(--badge-bg);
+  color: var(--badge-color);
+  border: 1px solid var(--badge-border);
+}
+
+.titleArea {
+  flex: 1;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 3px;
+  padding-right: 80px;
+}
+
+.title[data-completed="true"] {
+  color: #666;
+  text-decoration: line-through;
+}
+
+.location {
+  font-size: 12px;
+  color: #777;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.topRight {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.priorityBadge {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--badge-color);
+  background: var(--badge-bg);
+}
+
+.completedBadge {
+  font-size: 10px;
+  color: #2B8A3E;
+  background: #2B8A3E18;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #444;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.deadlineMsg {
+  margin-left: 44px;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--dl-border);
+  background: var(--dl-bg);
+}
+
+.deadlineText {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dl-color);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.postponeBadge {
+  margin-left: 44px;
+  margin-bottom: 10px;
+}
+
+.postponeText {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--postpone-color);
+  background: var(--postpone-bg);
+}
+
+.metaRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #888;
+  font-family: 'Noto Sans KR', sans-serif;
+  flex-wrap: wrap;
+  padding-left: 44px;
+}
+
+.metaTime {
+  font-weight: 700;
+}
+
+.metaAi {
+  color: #1C7ED6;
+  font-weight: 600;
+}
+
+.actions {
+  padding-left: 44px;
+  display: flex;
+  gap: 8px;
+}
+
+.actionBtn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-color);
+}
+
+.completedLabel {
+  padding-left: 44px;
+  font-size: 12px;
+  color: #555;
+  font-family: 'Noto Sans KR', sans-serif;
+}

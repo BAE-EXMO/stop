@@ -1,0 +1,29 @@
+/* ─── Shared Input / Button Styles ─── */
+
+.inputField {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  color: #eee;
+  font-size: 15px;
+  font-family: 'Noto Sans KR', sans-serif;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.inputField::placeholder {
+  color: #666;
+}
+
+.textareaField {
+  composes: inputField;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.dateInput {
+  composes: inputField;
+  color-scheme: dark;
+}

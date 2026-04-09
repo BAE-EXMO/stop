@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+}
+
+/* ─── Keyframe Animations ─── */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes floatPulse {
+  0%, 100% { box-shadow: 0 8px 32px #E8590C55; }
+  50%      { box-shadow: 0 8px 48px #E8590C88; }
+}
+
+@keyframes floatUp {
+  0%   { transform: translateY(0) scale(1); opacity: var(--particle-opacity); }
+  100% { transform: translateY(-120px) scale(0.5); opacity: 0; }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+@keyframes pulseRing {
+  0%   { transform: translate(-50%, -50%) scale(0.8); opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes musicBar0 {
+  from { height: 20%; }
+  to   { height: 90%; }
+}
+
+@keyframes musicBar1 {
+  from { height: 40%; }
+  to   { height: 70%; }
+}
+
+@keyframes musicBar2 {
+  from { height: 15%; }
+  to   { height: 95%; }
+}
