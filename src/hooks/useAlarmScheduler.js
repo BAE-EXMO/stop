@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { sendNotification, requestNotificationPermission } from "../utils/notifications";
+import { getDateStr } from "../utils/dateUtils";
 import { CATEGORIES } from "../constants/categories";
 
 const SNOOZE_STORAGE_KEY = "memchwo-snooze-map";
@@ -80,7 +81,7 @@ export default function useAlarmScheduler(tasks) {
       if (activeAlarm) return; // 이미 알림 표시 중
 
       const now = getCurrentMinutes();
-      const today = new Date().toISOString().slice(0, 10);
+      const today = getDateStr(0);
       const snoozeMap = snoozeMapRef.current;
 
       for (const task of tasks) {

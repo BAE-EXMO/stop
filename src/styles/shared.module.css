@@ -4,9 +4,9 @@
   width: 100%;
   padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid #333;
-  background: #1a1a1a;
-  color: #eee;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #222;
   font-size: 15px;
   font-family: 'Noto Sans KR', sans-serif;
   outline: none;
@@ -14,7 +14,7 @@
 }
 
 .inputField::placeholder {
-  color: #666;
+  color: #aaa;
 }
 
 .textareaField {
@@ -25,5 +25,5 @@
 
 .dateInput {
   composes: inputField;
-  color-scheme: dark;
+  color-scheme: light;
 }

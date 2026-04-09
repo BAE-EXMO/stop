@@ -1,126 +1,68 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { getDateStr } from "../utils/dateUtils";
-import { calcPriority, getPriorityLabel } from "../utils/priorityUtils";
-import { findSmartMatch, findHistoryMatches } from "../utils/placeUtils";
 
-export default function useAddTaskForm({ initDate, visitHistory, onAdd }) {
-  const [title, setTitle] = useState("");
+/**
+ * 노트 텍스트에서 첫 줄 = 제목, 나머지 줄 = 메모/준비물로 분리
+ */
+function parseNote(noteText) {
+  const lines = noteText.split("\n");
+  const title = (lines[0] || "").trim();
+  const rest = lines
+    .slice(1)
+    .filter((l) => l.trim())
+    .map((l) => l.trim());
+  return { title, rest };
+}
+
+export default function useAddTaskForm({ initDate, onAdd }) {
+  const [noteText, setNoteText] = useState("");
   const [date, setDate] = useState(initDate || getDateStr(0));
   const [hasTime, setHasTime] = useState(false);
   const [time, setTime] = useState("12:00");
   const [location, setLocation] = useState("");
-  const [category, setCategory] = useState("errand");
-  const [travelTime, setTravelTime] = useState(20);
-  const [prepText, setPrepText] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [smartMatch, setSmartMatch] = useState(null);
-  const [historyMatches, setHistoryMatches] = useState([]);
-  const [dismissed, setDismissed] = useState(false);
-  const [selectedPlace, setSelectedPlace] = useState(null);
-  const [isFromHistory, setIsFromHistory] = useState(false);
+  const [duration, setDuration] = useState("");
+  const [contact, setContact] = useState("");
+  const [attendees, setAttendees] = useState("");
+  const [manager, setManager] = useState("");
 
-  const debounceRef = useRef(null);
+  const { title, rest: noteLines } = useMemo(() => parseNote(noteText), [noteText]);
 
-  const onTitleChange = useCallback(
-    (value) => {
-      setTitle(value);
-      setDismissed(false);
-      setSelectedPlace(null);
-
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-
-      debounceRef.current = setTimeout(() => {
-        const smart = findSmartMatch(value);
-        const history = findHistoryMatches(value, visitHistory);
-        setSmartMatch(smart);
-        setHistoryMatches(history);
-
-        if (history.length > 0) {
-          setCategory(history[0].category);
-        } else if (smart) {
-          setCategory(smart.category);
-        }
-      }, 400);
-    },
-    [visitHistory]
-  );
-
-  const onSelectPlace = (place, fromHistory) => {
-    setLocation(place.name);
-    setTravelTime(place.travelTime);
-    setSelectedPlace(place);
-    setIsFromHistory(fromHistory);
-
-    if (place.prep) {
-      setPrepText(place.prep.join("\n"));
-    } else if (smartMatch?.prep) {
-      setPrepText(smartMatch.prep.join("\n"));
-    }
-    if (place.category) {
-      setCategory(place.category);
-    }
+  const onNoteChange = (value) => {
+    setNoteText(value);
   };
 
   const handleSubmit = () => {
-    if (!title.trim()) return;
+    if (!title) return;
 
-    const prepItems = prepText
-      .split("\n")
-      .filter((line) => line.trim())
-      .map((text) => ({ text: text.trim(), done: false }));
+    const prepItems = noteLines.map((text) => ({ text, done: false }));
 
     onAdd({
       id: Date.now(),
-      title: title.trim(),
+      title,
       date,
       time: hasTime ? time : "",
       hasTime,
       location: location.trim() || "미정",
-      travelTime,
-      prepItems: prepItems.length > 0 ? prepItems : [{ text: "준비물 확인", done: false }],
+      travelTime: 20,
+      prepItems: prepItems.length > 0 ? prepItems : [],
       prepTime: 10,
-      category,
+      category: "errand",
       deadline,
+      duration: duration.trim(),
+      contact: contact.trim(),
+      attendees: attendees.trim(),
+      manager: manager.trim(),
       postponeCount: 0,
       completed: false,
     });
   };
 
-  const clearSelectedPlace = () => {
-    setSelectedPlace(null);
-    setLocation("");
-    setDismissed(false);
-  };
-
-  // Preview priority
-  const previewTask = {
-    title,
-    time: hasTime ? time : "",
-    date,
-    travelTime,
-    prepItems: prepText.split("\n").filter((l) => l.trim()),
-    category,
-  };
-  const previewPriority = title.trim() ? calcPriority(previewTask) : null;
-  const previewLabel = previewPriority ? getPriorityLabel(previewPriority.score) : null;
-
-  const hasSuggestions = !dismissed && !selectedPlace && (historyMatches.length > 0 || smartMatch);
-
   return {
-    // State
-    title, date, hasTime, time, location, category,
-    travelTime, prepText, deadline,
-    smartMatch, historyMatches,
-    selectedPlace, isFromHistory,
-    hasSuggestions,
-    previewPriority, previewLabel,
-
-    // Setters
+    noteText, title, date, hasTime, time, location, noteLines,
+    deadline, duration, contact, attendees, manager,
     setDate, setHasTime, setTime, setLocation,
-    setCategory, setTravelTime, setPrepText, setDeadline,
-    setDismissed,
-
-    // Handlers
-    onTitleChange, onSelectPlace, handleSubmit, clearSelectedPlace,
+    setDeadline, setDuration, setContact, setAttendees, setManager,
+    onNoteChange, handleSubmit,
   };
 }
