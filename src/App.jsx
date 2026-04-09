@@ -46,10 +46,19 @@ function NowTaskModal({ task, onConfirm }) {
         background: "#fff", border: "1px solid #e0e0e0", padding: "28px 24px",
         fontFamily: FONT_FAMILY, maxHeight: "80vh", overflowY: "auto",
       }}>
+        {/* 슬로건 */}
+        <div style={{
+          textAlign: "center", marginBottom: 16, padding: "14px 0",
+          borderBottom: "2px solid #1a1a1a",
+        }}>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a", letterSpacing: 2, lineHeight: 1 }}>
+            STOP & DO IT
+          </div>
+        </div>
+
         {/* 헤더 */}
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           <div style={{ fontSize: 40, marginBottom: 8 }}>{categoryInfo.icon}</div>
-          <div style={{ fontSize: 12, color: "#E8590C", fontWeight: 800, letterSpacing: 1, marginBottom: 4 }}>지금 할 일</div>
           <div style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a" }}>{task.title}</div>
         </div>
 
