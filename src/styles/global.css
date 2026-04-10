@@ -1,7 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 * {
   box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f7f8fa;
 }
 
 ::-webkit-scrollbar {
@@ -15,9 +20,14 @@
   to   { opacity: 1; transform: scale(1); }
 }
 
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 @keyframes floatPulse {
-  0%, 100% { box-shadow: 0 8px 32px #E8590C55; }
-  50%      { box-shadow: 0 8px 48px #E8590C88; }
+  0%, 100% { box-shadow: 0 8px 32px #0891b255; }
+  50%      { box-shadow: 0 8px 48px #0891b288; }
 }
 
 @keyframes floatUp {
@@ -53,4 +63,9 @@
 @keyframes musicBar2 {
   from { height: 15%; }
   to   { height: 95%; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }

@@ -12,7 +12,7 @@ export default function TaskCard({ task, onDelete, onComplete, onTap }) {
         {task.title}
       </div>
       {task.time && (
-        <span className={styles.time}>{task.time}</span>
+        <span className={styles.time}>{task.timeLabel || task.time}</span>
       )}
       {task.location && task.location !== "미정" && (
         <span className={styles.location}>{task.location}</span>

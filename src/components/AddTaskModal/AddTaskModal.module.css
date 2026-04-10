@@ -5,20 +5,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .modal {
   width: 100%;
   max-width: 400px;
   margin: 0 16px;
-  border-radius: 24px;
+  border-radius: 20px;
   background: #fff;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e8eaed;
   padding: 24px 20px;
   max-height: 88vh;
   overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.08);
 }
 
 /* ── Header ── */
@@ -30,10 +31,10 @@
 }
 
 .headerTitle {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
-  color: #1a1a1a;
-  font-family: 'Noto Sans KR', sans-serif;
+  color: #1a1a2e;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
 }
 
 .datePills {
@@ -43,34 +44,40 @@
 }
 
 .datePill {
-  padding: 6px 16px;
-  border-radius: 10px;
-  border: 1.5px solid #ddd;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #e8eaed;
   background: transparent;
   color: #999;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   cursor: pointer;
+  transition: all 0.15s;
 }
 
 .datePillActive {
-  border-color: #E8590C;
-  background: #E8590C12;
-  color: #E8590C;
-  font-weight: 800;
+  border-color: #0891b2;
+  background: #0891b210;
+  color: #0891b2;
+  font-weight: 700;
 }
 
 .headerClose {
   background: none;
-  border: 1px solid #ddd;
-  border-radius: 10px;
+  border: 1px solid #e8eaed;
+  border-radius: 8px;
   padding: 6px 14px;
-  color: #888;
+  color: #999;
   font-size: 12px;
   font-weight: 600;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   cursor: pointer;
+  transition: color 0.15s;
+}
+
+.headerClose:hover {
+  color: #666;
 }
 
 /* ── Note area ── */
@@ -78,12 +85,12 @@
   width: 100%;
   min-height: 160px;
   padding: 16px;
-  border-radius: 16px;
-  border: 1.5px solid #e0e0e0;
-  background: #fafafa;
-  color: #222;
+  border-radius: 14px;
+  border: 1px solid #e8eaed;
+  background: #f7f8fa;
+  color: #1a1a2e;
   font-size: 15px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   line-height: 1.7;
   resize: vertical;
   outline: none;
@@ -92,7 +99,7 @@
 }
 
 .noteArea:focus {
-  border-color: #E8590C88;
+  border-color: #0891b266;
 }
 
 .noteArea::placeholder {
@@ -109,27 +116,54 @@
   margin-bottom: 16px;
   font-size: 11px;
   color: #aaa;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
 }
 
 .noteHintDot {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #E8590C;
+  background: #0891b2;
   flex-shrink: 0;
 }
 
-/* ── Field rows (time, location) ── */
+/* ── Title preview ── */
+.titlePreview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #0891b208;
+  border: 1px solid #0891b222;
+  margin-bottom: 12px;
+}
+
+.titlePreviewLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0891b2;
+  flex-shrink: 0;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+}
+
+.titlePreviewText {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+}
+
+/* ── Field rows ── */
 .fieldRow {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  border: 1px solid #eee;
+  border: 1px solid #e8eaed;
   border-radius: 12px;
   margin-bottom: 8px;
-  background: #fafafa;
+  background: #f7f8fa;
   position: relative;
 }
 
@@ -146,7 +180,7 @@
   border: none;
   color: #333;
   font-size: 14px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   outline: none;
   padding: 0;
 }
@@ -158,16 +192,17 @@
 .fieldBtn {
   background: none;
   border: none;
-  color: #aaa;
+  color: #bbb;
   font-size: 14px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   cursor: pointer;
   padding: 0;
   text-align: left;
+  transition: color 0.15s;
 }
 
 .fieldBtn:hover {
-  color: #E8590C;
+  color: #0891b2;
 }
 
 /* Time */
@@ -176,15 +211,74 @@
   align-items: center;
   gap: 8px;
   flex: 1;
+  flex-wrap: wrap;
+}
+
+.timeModeTabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid #e8eaed;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.timeModeTab {
+  background: #fff;
+  border: none;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #999;
+  cursor: pointer;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  transition: background 0.15s, color 0.15s;
+}
+
+.timeModeTab + .timeModeTab {
+  border-left: 1px solid #e8eaed;
+}
+
+.timeModeTabActive {
+  background: #0891b2;
+  color: #fff;
+}
+
+.ampmGroup {
+  display: flex;
+  gap: 6px;
+}
+
+.ampmBtn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #e8eaed;
+  background: #fff;
+  color: #888;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.ampmBtn:hover {
+  border-color: #0891b244;
+}
+
+.ampmBtnActive {
+  border-color: #0891b2;
+  background: #0891b210;
+  color: #0891b2;
+  font-weight: 700;
 }
 
 .timeInput {
   background: #fff;
-  border: 1px solid #ddd;
+  border: 1px solid #e8eaed;
   border-radius: 8px;
   color: #333;
   font-size: 14px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   padding: 6px 10px;
   color-scheme: light;
   outline: none;
@@ -193,13 +287,18 @@
 .timeClearBtn {
   margin-left: auto;
   background: none;
-  border: 1px solid #ddd;
+  border: 1px solid #e8eaed;
   border-radius: 8px;
   color: #999;
   font-size: 11px;
   padding: 4px 10px;
   cursor: pointer;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  transition: color 0.15s;
+}
+
+.timeClearBtn:hover {
+  color: #666;
 }
 
 /* Deadline */
@@ -209,7 +308,7 @@
   border: none;
   color: #333;
   font-size: 14px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   color-scheme: light;
   outline: none;
   padding: 0;
@@ -220,7 +319,7 @@
   left: 52px;
   color: #bbb;
   font-size: 14px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   pointer-events: none;
 }
 
@@ -232,12 +331,18 @@
 .submitBtn {
   width: 100%;
   padding: 16px;
-  border-radius: 14px;
+  border-radius: 12px;
   border: none;
-  background: #E8590C;
+  background: linear-gradient(135deg, #0891b2, #0e7490);
   color: #fff;
   font-size: 16px;
   font-weight: 800;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   cursor: pointer;
+  box-shadow: 0 4px 20px #0891b222;
+  transition: box-shadow 0.2s;
+}
+
+.submitBtn:hover {
+  box-shadow: 0 6px 28px #0891b233;
 }

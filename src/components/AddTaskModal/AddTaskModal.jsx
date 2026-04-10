@@ -1,4 +1,4 @@
-import { getDateStr, getDateLabel } from "../../utils/dateUtils";
+import { getDateStr } from "../../utils/dateUtils";
 import useAddTaskForm from "../../hooks/useAddTaskForm";
 import styles from "./AddTaskModal.module.css";
 
@@ -34,27 +34,61 @@ export default function AddTaskModal({ onAdd, onClose, initDate }) {
         <textarea
           value={form.noteText}
           onChange={(e) => form.onNoteChange(e.target.value)}
-          placeholder={"할 일을 자유롭게 적어주세요\n\n예) 법무사 미팅\n인감증명서 가져가기\n계약서 사본 2부"}
+          placeholder={"할 일을 자유롭게 적어주세요\n\n예) 오후 3시에 스타벅스에서 김대리님 미팅\n계약서 사본 2부 챙기기\n인감증명서 가져가기"}
           className={styles.noteArea}
           rows={6}
           autoFocus
         />
         <div className={styles.noteHint}>
           <span className={styles.noteHintDot} />
-          첫 줄이 제목, 아래 줄은 상세 내용이 됩니다
+          자유롭게 적으면 제목·시간·장소 등이 자동 추출됩니다
         </div>
+
+        {/* 추출된 제목 미리보기 */}
+        {form.title && form.noteText.trim() && (
+          <div className={styles.titlePreview}>
+            <span className={styles.titlePreviewLabel}>제목</span>
+            <span className={styles.titlePreviewText}>{form.title}</span>
+          </div>
+        )}
 
         {/* 시간 · 장소 */}
         <div className={styles.fieldRow}>
           <span className={styles.fieldIcon}>⏰</span>
           {form.hasTime ? (
             <div className={styles.timeGroup}>
-              <input
-                type="time"
-                value={form.time}
-                onChange={(e) => form.setTime(e.target.value)}
-                className={styles.timeInput}
-              />
+              {/* 오전/오후 · 정확한 시간 토글 */}
+              <div className={styles.timeModeTabs}>
+                <button
+                  className={`${styles.timeModeTab} ${form.timeMode === "ampm" ? styles.timeModeTabActive : ""}`}
+                  onClick={() => form.setTimeMode("ampm")}
+                >오전/오후</button>
+                <button
+                  className={`${styles.timeModeTab} ${form.timeMode === "exact" ? styles.timeModeTabActive : ""}`}
+                  onClick={() => form.setTimeMode("exact")}
+                >정확한 시간</button>
+              </div>
+
+              {form.timeMode === "ampm" ? (
+                <div className={styles.ampmGroup}>
+                  <button
+                    className={`${styles.ampmBtn} ${form.ampm === "am" ? styles.ampmBtnActive : ""}`}
+                    onClick={() => form.setAmpm("am")}
+                  >🌅 오전</button>
+                  <button
+                    className={`${styles.ampmBtn} ${form.ampm === "pm" ? styles.ampmBtnActive : ""}`}
+                    onClick={() => form.setAmpm("pm")}
+                  >🌇 오후</button>
+                </div>
+              ) : (
+                <input
+                  type="time"
+                  value={form.time}
+                  onChange={(e) => form.setTime(e.target.value)}
+                  className={styles.timeInput}
+                />
+              )}
+
               <button className={styles.timeClearBtn} onClick={() => form.setHasTime(false)}>해제</button>
             </div>
           ) : (
@@ -102,7 +136,7 @@ export default function AddTaskModal({ onAdd, onClose, initDate }) {
             style={{ opacity: form.title ? 1 : 0.4, cursor: form.title ? "pointer" : "default" }}
             onClick={form.handleSubmit}
           >
-            {getDateLabel(form.date)}에 추가
+            저장
           </button>
         </div>
       </div>

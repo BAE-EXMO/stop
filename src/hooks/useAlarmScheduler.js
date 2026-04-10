@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { sendNotification, requestNotificationPermission } from "../utils/notifications";
 import { getDateStr } from "../utils/dateUtils";
 import { CATEGORIES } from "../constants/categories";
+import { scheduleAlarm as swScheduleAlarm, onSWMessage } from "../utils/swRegistration";
+import { takeoverScreen } from "../utils/screenTakeover";
 
 const SNOOZE_STORAGE_KEY = "memchwo-snooze-map";
 const CHECK_INTERVAL_MS = 30000; // 30초마다 체크
@@ -54,10 +56,22 @@ export default function useAlarmScheduler(tasks) {
   const triggeredRef = useRef(new Set()); // 이미 트리거된 task ID
   const snoozeMapRef = useRef(loadSnoozeMap());
 
-  // 앱 시작 시 알림 권한 요청
+  // 앱 시작 시 알림 권한 요청 + SW 메시지 리스너
   useEffect(() => {
     requestNotificationPermission();
-  }, []);
+
+    // SW에서 알림 클릭 시 해당 task 알람 표시 + 화면 전환
+    const unsubscribe = onSWMessage((data) => {
+      if (data?.type === "ALARM_CLICKED" && data.taskId) {
+        const task = tasks.find((t) => String(t.id) === String(data.taskId));
+        if (task) {
+          takeoverScreen();
+          setActiveAlarm(task);
+        }
+      }
+    });
+    return unsubscribe;
+  }, [tasks]);
 
   // 완료/삭제된 task의 스누즈 엔트리 정리
   useEffect(() => {
@@ -110,15 +124,24 @@ export default function useAlarmScheduler(tasks) {
         if (diff <= TRIGGER_WINDOW_MIN && diff >= -10) {
           triggeredRef.current.add(taskId);
 
-          // 탭이 비활성이면 시스템 알림
-          if (document.visibilityState === "hidden") {
-            const categoryInfo = CATEGORIES[task.category] || {};
-            sendNotification(
-              `${categoryInfo.icon || "📌"} ${task.title}`,
-              `${task.time}까지 도착 · 지금 출발하세요!`,
-              () => setActiveAlarm(task)
-            );
-          }
+          const categoryInfo = CATEGORIES[task.category] || {};
+          const title = `${categoryInfo.icon || "📌"} ${task.title}`;
+          const body = `${task.time}까지 도착 · 지금 출발하세요!`;
+
+          // 시스템 알림 (탭 비활성이든 아니든 항상 발송)
+          swScheduleAlarm({
+            id: task.id,
+            title,
+            body,
+            triggerAt: Date.now(),
+          });
+          sendNotification(title, body, () => {
+            takeoverScreen();
+            setActiveAlarm(task);
+          });
+
+          // 화면 강제 전환: 포커스 + 풀스크린 + Wake Lock
+          takeoverScreen();
 
           setActiveAlarm(task);
           break; // 한 번에 하나만

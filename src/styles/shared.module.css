@@ -4,17 +4,17 @@
   width: 100%;
   padding: 12px 14px;
   border-radius: 12px;
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #222;
+  border: 1px solid #e8eaed;
+  background: #f7f8fa;
+  color: #1a1a2e;
   font-size: 15px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   outline: none;
   box-sizing: border-box;
 }
 
 .inputField::placeholder {
-  color: #aaa;
+  color: #bbb;
 }
 
 .textareaField {

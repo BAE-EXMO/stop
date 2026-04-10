@@ -9,7 +9,7 @@ export default function SensoryAlarm({ task, media, onFinish }) {
     return media[Math.floor(Math.random() * media.length)];
   });
 
-  const [countdownSec, setCountdownSec] = useState(3);
+  const [countdownSec, setCountdownSec] = useState(10);
   const [particles] = useState(() =>
     Array.from({ length: 20 }, (_, i) => ({
       id: i,
@@ -26,22 +26,28 @@ export default function SensoryAlarm({ task, media, onFinish }) {
 
   // 미디어가 동영상/릴스이면 자체 오디오 사용, 사진이면 앰비언트 재생
   const isVideo = picked && (picked.type === "video" || picked.type === "reel");
-  useSensoryAudio(!isVideo);
+  const [playing, setPlaying] = useState(true);
+  const { stop: stopAudio } = useSensoryAudio(!isVideo && playing);
 
-  // 3초 카운트다운 후 자동 종료
+  // 10초 카운트다운 후 자동 종료
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdownSec((c) => {
         if (c <= 1) {
           clearInterval(timer);
+          setPlaying(false);
+          stopAudio();
           onFinish();
           return 0;
         }
         return c - 1;
       });
     }, 1000);
-    return () => clearInterval(timer);
-  }, [onFinish]);
+    return () => {
+      clearInterval(timer);
+      stopAudio();
+    };
+  }, [onFinish, stopAudio]);
 
   // 미디어 배경 렌더
   const renderBackground = () => {
@@ -113,7 +119,7 @@ export default function SensoryAlarm({ task, media, onFinish }) {
         </div>
         <div className={styles.countdown}>{countdownSec}초 후 상세 정보가 표시됩니다</div>
 
-        <button className={styles.skipBtn} onClick={onFinish}>
+        <button className={styles.skipBtn} onClick={() => { setPlaying(false); stopAudio(); onFinish(); }}>
           바로 확인하기 →
         </button>
       </div>

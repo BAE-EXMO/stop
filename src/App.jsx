@@ -16,6 +16,7 @@ import SettingsScreen from "./components/SettingsScreen/SettingsScreen";
 import AddTaskModal from "./components/AddTaskModal/AddTaskModal";
 import TaskCard from "./components/TaskCard/TaskCard";
 
+import { takeoverScreen, releaseScreen } from "./utils/screenTakeover";
 import "./styles/global.css";
 
 /**
@@ -38,47 +39,51 @@ function NowTaskModal({ task, onConfirm }) {
 
   return (
     <div style={{
-      position: "fixed", inset: 0, zIndex: 850, display: "flex", alignItems: "center", justifyContent: "center",
-      background: "rgba(0,0,0,0.25)",
+      position: "fixed", inset: 0, zIndex: 850, display: "flex", alignItems: "flex-start", justifyContent: "flex-end",
+      background: "rgba(0,0,0,0.15)",
+      backdropFilter: "blur(8px)",
+      padding: "16px",
     }}>
       <div style={{
-        width: "100%", maxWidth: 380, margin: "0 16px", borderRadius: 24,
-        background: "#fff", border: "1px solid #e0e0e0", padding: "28px 24px",
+        width: "100%", maxWidth: 340, borderRadius: 18,
+        background: "#fff", border: "1px solid #e8eaed", padding: "24px 20px",
         fontFamily: FONT_FAMILY, maxHeight: "80vh", overflowY: "auto",
+        boxShadow: "0 8px 40px rgba(0,0,0,0.1)",
+        animation: "slideInRight 0.3s ease-out",
       }}>
         {/* 슬로건 */}
         <div style={{
-          textAlign: "center", marginBottom: 16, padding: "14px 0",
-          borderBottom: "2px solid #1a1a1a",
+          textAlign: "center", marginBottom: 16, padding: "12px 0",
+          borderBottom: "2px solid #1a1a2e",
         }}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a", letterSpacing: 2, lineHeight: 1 }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: "#0891b2", letterSpacing: 3, lineHeight: 1 }}>
             STOP & DO IT
           </div>
         </div>
 
         {/* 헤더 */}
         <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <div style={{ fontSize: 40, marginBottom: 8 }}>{categoryInfo.icon}</div>
-          <div style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a" }}>{task.title}</div>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>{categoryInfo.icon}</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "#1a1a2e" }}>{task.title}</div>
         </div>
 
-        {/* 상태 뱃지: 마감시한 · 미룬 횟수 */}
+        {/* 상태 뱃지 */}
         {(hasDeadline || hasPostpone) && (
           <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 16, flexWrap: "wrap" }}>
             {hasDeadline && (
               <span style={{
-                fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 8,
-                background: "#E8590C12", color: "#E8590C", border: "1px solid #E8590C33",
+                fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 6,
+                background: "#0891b210", color: "#0891b2", border: "1px solid #0891b233",
               }}>
                 📅 마감 {task.deadline}
               </span>
             )}
             {hasPostpone && (
               <span style={{
-                fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 8,
-                background: task.postponeCount >= 3 ? "#E0313115" : "#E6770015",
-                color: task.postponeCount >= 3 ? "#E03131" : "#E67700",
-                border: `1px solid ${task.postponeCount >= 3 ? "#E0313133" : "#E6770033"}`,
+                fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 6,
+                background: task.postponeCount >= 3 ? "#ef444410" : "#f59e0b10",
+                color: task.postponeCount >= 3 ? "#ef4444" : "#e67700",
+                border: `1px solid ${task.postponeCount >= 3 ? "#ef444433" : "#e6770033"}`,
               }}>
                 {task.postponeCount >= 3 ? "😤" : "⏰"} {task.postponeCount}번 미룸
               </span>
@@ -89,17 +94,17 @@ function NowTaskModal({ task, onConfirm }) {
         {/* 정보 행 */}
         {infoRows.length > 0 && (
           <div style={{
-            background: "#fafafa", borderRadius: 14, border: "1px solid #eee",
+            background: "#f7f8fa", borderRadius: 12, border: "1px solid #e8eaed",
             padding: "4px 0", marginBottom: 12,
           }}>
             {infoRows.map((row, i) => (
               <div key={i} style={{
                 display: "flex", alignItems: "center", gap: 10, padding: "10px 16px",
-                borderTop: i > 0 ? "1px solid #f0f0f0" : "none",
+                borderTop: i > 0 ? "1px solid #f0f2f5" : "none",
               }}>
-                <span style={{ fontSize: 16, width: 24, textAlign: "center", flexShrink: 0 }}>{row.icon}</span>
-                <span style={{ fontSize: 12, color: "#999", width: 56, flexShrink: 0 }}>{row.label}</span>
-                <span style={{ fontSize: 14, color: "#333", fontWeight: 600 }}>{row.value}</span>
+                <span style={{ fontSize: 14, width: 24, textAlign: "center", flexShrink: 0 }}>{row.icon}</span>
+                <span style={{ fontSize: 11, color: "#999", width: 56, flexShrink: 0 }}>{row.label}</span>
+                <span style={{ fontSize: 13, color: "#333", fontWeight: 600 }}>{row.value}</span>
               </div>
             ))}
           </div>
@@ -108,12 +113,12 @@ function NowTaskModal({ task, onConfirm }) {
         {/* 메모 · 준비물 */}
         {hasNotes && (
           <div style={{
-            background: "#fafafa", borderRadius: 14, padding: "14px 16px", marginBottom: 16,
-            border: "1px solid #eee",
+            background: "#f7f8fa", borderRadius: 12, padding: "14px 16px", marginBottom: 16,
+            border: "1px solid #e8eaed",
           }}>
-            <div style={{ fontSize: 12, color: "#999", fontWeight: 700, marginBottom: 8 }}>📋 내용 · 준비물</div>
+            <div style={{ fontSize: 11, color: "#999", fontWeight: 700, marginBottom: 8 }}>📋 내용 · 준비물</div>
             {task.prepItems.map((item, i) => (
-              <div key={i} style={{ fontSize: 14, color: "#444", lineHeight: 1.7, paddingLeft: 4 }}>· {item.text}</div>
+              <div key={i} style={{ fontSize: 13, color: "#555", lineHeight: 1.8, paddingLeft: 4 }}>· {item.text}</div>
             ))}
           </div>
         )}
@@ -122,9 +127,11 @@ function NowTaskModal({ task, onConfirm }) {
         <button
           onClick={onConfirm}
           style={{
-            width: "100%", padding: 16, borderRadius: 14, border: "none",
-            background: "#E8590C", color: "#fff", fontSize: 16, fontWeight: 800,
+            width: "100%", padding: 14, borderRadius: 12, border: "none",
+            background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "#fff",
+            fontSize: 15, fontWeight: 800,
             fontFamily: FONT_FAMILY, cursor: "pointer",
+            boxShadow: "0 4px 20px #0891b222",
           }}
         >
           확인함
@@ -142,6 +149,25 @@ export default function App() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [nowTask, setNowTask] = useState(null);
+
+  // PWA 설치 프롬프트
+  const [installPrompt, setInstallPrompt] = useState(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const result = await installPrompt.userChoice;
+    if (result.outcome === "accepted") setInstallPrompt(null);
+  };
 
   // Task CRUD
   const addTask = (task) => {
@@ -172,7 +198,7 @@ export default function App() {
     setNowTask(null);
   };
 
-  // 알람 트리거 → 감각전환(3초, 배경 유지) → 페이드아웃하며 모달 표시
+  // 알람 트리거 → 감각전환(10초, 배경 유지) → 페이드아웃하며 모달 표시
   const [sensoryActive, setSensoryActive] = useState(false);
   const [sensoryFaded, setSensoryFaded] = useState(false);
 
@@ -184,6 +210,18 @@ export default function App() {
     }
   }, [activeAlarm]);
 
+  // 감각전환 중 탭이 다시 보이면 풀스크린 재시도
+  useEffect(() => {
+    if (!sensoryActive) return;
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && sensoryActive) {
+        takeoverScreen();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [sensoryActive]);
+
   const handleSensoryFinish = () => {
     setSensoryFaded(true);
     dismissAlarm();
@@ -193,6 +231,7 @@ export default function App() {
     setNowTask(null);
     setSensoryActive(false);
     setSensoryFaded(false);
+    releaseScreen();
   };
 
   // 오늘 / 내일 할 일
@@ -219,33 +258,72 @@ export default function App() {
     : 0;
 
   return (
-    <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "#f5f5f5", fontFamily: FONT_FAMILY, position: "relative" }}>
+    <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "#f7f8fa", fontFamily: FONT_FAMILY, position: "relative" }}>
       {/* App header */}
-      <div style={{ padding: "20px 24px 8px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div style={{ padding: "24px 24px 8px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: "#1a1a1a", lineHeight: 1.2 }}>멈춰!</div>
-          <div style={{ fontSize: 13, color: "#999", marginTop: 2 }}>할 일을 잊지 마세요</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: "#1a1a2e", lineHeight: 1.2, letterSpacing: -0.5 }}>STOP.</div>
+          <div style={{ fontSize: 12, color: "#999", marginTop: 4, letterSpacing: 1 }}>DO IT NOW</div>
         </div>
+        <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+          {installPrompt && (
+            <button
+              onClick={handleInstall}
+              style={{
+                background: "linear-gradient(135deg, #0891b2, #0e7490)", border: "none", borderRadius: 10,
+                padding: "8px 14px", color: "#fff", fontSize: 12, fontWeight: 700,
+                fontFamily: FONT_FAMILY, cursor: "pointer",
+                boxShadow: "0 2px 12px #0891b233",
+              }}
+            >
+              📲 설치
+            </button>
+          )}
+          <button
+            onClick={() => setShowSettings(true)}
+            style={{
+              background: "#fff", border: "1px solid #e8eaed", borderRadius: 10,
+              padding: "8px 14px", color: "#666", fontSize: 12, fontWeight: 600,
+              fontFamily: FONT_FAMILY, cursor: "pointer",
+              transition: "border-color 0.2s",
+            }}
+          >
+            ⚙️ 설정
+          </button>
+        </div>
+      </div>
+
+      {/* 할 일 추가 버튼 */}
+      <div style={{ padding: "12px 24px 0" }}>
         <button
-          onClick={() => setShowSettings(true)}
+          onClick={() => setShowAddModal(true)}
           style={{
-            background: "#fff", border: "1px solid #ddd", borderRadius: 12,
-            padding: "8px 14px", color: "#666", fontSize: 12, fontWeight: 700,
-            fontFamily: FONT_FAMILY, cursor: "pointer", marginTop: 4,
+            width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            padding: "14px 0", borderRadius: 12,
+            border: "1px dashed #d0d5dd", cursor: "pointer",
+            background: "#fff", color: "#999",
+            fontSize: 13, fontWeight: 600, fontFamily: FONT_FAMILY,
+            transition: "background 0.2s, border-color 0.2s, color 0.2s",
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "#f0f8ff"; e.currentTarget.style.borderColor = "#0891b266"; e.currentTarget.style.color = "#0891b2"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "#d0d5dd"; e.currentTarget.style.color = "#999"; }}
         >
-          ⚙️ 설정
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>할 일 추가</span>
         </button>
       </div>
 
       {/* 오늘 */}
-      <div style={{ padding: "16px 24px 4px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          <span style={{ fontSize: 18, fontWeight: 900, color: "#1a1a1a" }}>오늘</span>
-          <span style={{ fontSize: 12, color: "#999" }}>{todayTasks.length}개</span>
+      <div style={{ padding: "20px 24px 4px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a2e", letterSpacing: 0.5 }}>TODAY</span>
+          <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>{todayTasks.length}</span>
           {todayDone > 0 && (
-            <span style={{ fontSize: 11, color: "#2B8A3E", background: "#2B8A3E11", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>
-              {todayDone}개 완료
+            <span style={{ fontSize: 10, color: "#10b981", background: "#10b98112", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>
+              {todayDone} done
             </span>
           )}
         </div>
@@ -260,21 +338,21 @@ export default function App() {
             />
           ))
         ) : (
-          <div style={{ textAlign: "center", padding: "32px 20px", color: "#ccc" }}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>🎉</div>
-            <div style={{ fontSize: 14, color: "#aaa" }}>오늘 할 일이 없어요</div>
+          <div style={{ textAlign: "center", padding: "32px 20px" }}>
+            <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.5 }}>✨</div>
+            <div style={{ fontSize: 13, color: "#bbb" }}>오늘 할 일이 없어요</div>
           </div>
         )}
       </div>
 
       {/* 내일 */}
-      <div style={{ padding: "16px 24px 120px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          <span style={{ fontSize: 18, fontWeight: 900, color: "#1a1a1a" }}>내일</span>
-          <span style={{ fontSize: 12, color: "#999" }}>{tomorrowTasks.length}개</span>
+      <div style={{ padding: "20px 24px 32px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a2e", letterSpacing: 0.5 }}>TOMORROW</span>
+          <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>{tomorrowTasks.length}</span>
           {tomorrowDone > 0 && (
-            <span style={{ fontSize: 11, color: "#2B8A3E", background: "#2B8A3E11", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>
-              {tomorrowDone}개 완료
+            <span style={{ fontSize: 10, color: "#10b981", background: "#10b98112", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>
+              {tomorrowDone} done
             </span>
           )}
         </div>
@@ -289,36 +367,14 @@ export default function App() {
             />
           ))
         ) : (
-          <div style={{ textAlign: "center", padding: "32px 20px", color: "#ccc" }}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>📋</div>
-            <div style={{ fontSize: 14, color: "#aaa" }}>내일 할 일이 없어요</div>
+          <div style={{ textAlign: "center", padding: "32px 20px" }}>
+            <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.5 }}>📋</div>
+            <div style={{ fontSize: 13, color: "#bbb" }}>내일 할 일이 없어요</div>
           </div>
         )}
       </div>
 
-      {/* FAB */}
-      <div style={{ position: "fixed", bottom: 32, right: 24, zIndex: 100 }}>
-        <button
-          onClick={() => setShowAddModal(true)}
-          style={{
-            display: "flex", alignItems: "center", gap: 8,
-            padding: "14px 22px", borderRadius: 50,
-            border: "none", cursor: "pointer",
-            background: "#1a1a1a", color: "#fff",
-            fontSize: 14, fontWeight: 700, fontFamily: FONT_FAMILY,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.18)",
-            transition: "transform 0.2s, box-shadow 0.2s",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(0,0,0,0.25)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.18)"; }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          <span>할 일 추가</span>
-        </button>
-      </div>
+
 
       {/* 감각 전환 배경 — 모달이 열려도 유지, 페이드아웃 */}
       {sensoryActive && nowTask && (

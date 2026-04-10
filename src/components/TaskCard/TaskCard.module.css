@@ -4,31 +4,41 @@
   gap: 12px;
   padding: 14px 16px;
   background: #fff;
-  border: 1px solid #eee;
+  border: 1px solid #e8eaed;
   border-radius: 14px;
   margin-bottom: 8px;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, border-color 0.3s, box-shadow 0.3s;
   cursor: pointer;
 }
 
+.row:hover {
+  border-color: #0891b244;
+  box-shadow: 0 2px 12px rgba(8, 145, 178, 0.06);
+}
+
 .row[data-completed="true"] {
-  opacity: 0.45;
+  opacity: 0.4;
 }
 
 .checkBtn {
   width: 22px;
   height: 22px;
   border-radius: 7px;
-  border: 2px solid #ccc;
+  border: 2px solid #d0d5dd;
   background: #fff;
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
+  transition: border-color 0.2s;
+}
+
+.checkBtn:hover {
+  border-color: #0891b2;
 }
 
 .checkBtn[data-done="true"] {
-  border-color: #2B8A3E;
-  background: #2B8A3E;
+  border-color: #10b981;
+  background: #10b981;
 }
 
 .checkBtn[data-done="true"]::after {
@@ -46,9 +56,9 @@
 .title {
   flex: 1;
   font-size: 15px;
-  font-weight: 700;
-  color: #1a1a1a;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 600;
+  color: #1a1a2e;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -63,20 +73,23 @@
 .time {
   font-size: 12px;
   font-weight: 700;
-  color: #E8590C;
-  font-family: 'Noto Sans KR', sans-serif;
+  color: #0891b2;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   flex-shrink: 0;
 }
 
 .location {
-  font-size: 12px;
-  color: #999;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 11px;
+  color: #888;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
   flex-shrink: 0;
   max-width: 80px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 2px 8px;
+  background: #f0f2f5;
+  border-radius: 6px;
 }
 
 .deleteBtn {
@@ -87,8 +100,9 @@
   cursor: pointer;
   padding: 2px;
   flex-shrink: 0;
+  transition: color 0.2s;
 }
 
 .deleteBtn:hover {
-  color: #E03131;
+  color: #ef4444;
 }

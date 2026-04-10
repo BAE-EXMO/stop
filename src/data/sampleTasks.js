@@ -3,8 +3,32 @@ import { getDateStr } from "../utils/dateUtils";
 /**
  * 샘플 task 목록 생성 (호출 시점의 날짜 기준)
  */
+function getTestTime(offsetMin = 2) {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + offsetMin);
+  return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+}
+
 export function createSampleTasks() {
   return [
+    {
+      id: 999,
+      title: "⚡ 알람 테스트 — 2분 후 트리거",
+      time: getTestTime(2),
+      date: getDateStr(0),
+      location: "테스트 장소",
+      travelTime: 0,
+      prepTime: 0,
+      prepItems: [
+        { text: "감각전환 화면 확인", done: false },
+        { text: "모달 표시 확인", done: false },
+      ],
+      category: "work",
+      hasTime: true,
+      deadline: getDateStr(0),
+      postponeCount: 0,
+      completed: false,
+    },
     {
       id: 1,
       title: "법무사 미팅",
