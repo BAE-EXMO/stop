@@ -80,6 +80,24 @@
   color: #666;
 }
 
+.headerSaveBtn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 2px 10px #0891b222;
+  transition: box-shadow 0.2s;
+}
+
+.headerSaveBtn:hover {
+  box-shadow: 0 4px 16px #0891b233;
+}
+
 /* ── Note area ── */
 .noteArea {
   width: 100%;
@@ -323,26 +341,3 @@
   pointer-events: none;
 }
 
-/* ── Footer ── */
-.footer {
-  margin-top: 16px;
-}
-
-.submitBtn {
-  width: 100%;
-  padding: 16px;
-  border-radius: 12px;
-  border: none;
-  background: linear-gradient(135deg, #0891b2, #0e7490);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 800;
-  font-family: 'Inter', 'Noto Sans KR', sans-serif;
-  cursor: pointer;
-  box-shadow: 0 4px 20px #0891b222;
-  transition: box-shadow 0.2s;
-}
-
-.submitBtn:hover {
-  box-shadow: 0 6px 28px #0891b233;
-}

@@ -28,6 +28,13 @@ export default function AddTaskModal({ onAdd, onClose, initDate }) {
             ))}
           </div>
           <button className={styles.headerClose} onClick={onClose}>닫기</button>
+          <button
+            className={styles.headerSaveBtn}
+            style={{ opacity: form.title ? 1 : 0.4, cursor: form.title ? "pointer" : "default" }}
+            onClick={form.handleSubmit}
+          >
+            저장
+          </button>
         </div>
 
         {/* Note area */}
@@ -53,11 +60,10 @@ export default function AddTaskModal({ onAdd, onClose, initDate }) {
         )}
 
         {/* 시간 · 장소 */}
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldIcon}>⏰</span>
-          {form.hasTime ? (
+        {form.hasTime && (
+          <div className={styles.fieldRow}>
+            <span className={styles.fieldIcon}>⏰</span>
             <div className={styles.timeGroup}>
-              {/* 오전/오후 · 정확한 시간 토글 */}
               <div className={styles.timeModeTabs}>
                 <button
                   className={`${styles.timeModeTab} ${form.timeMode === "ampm" ? styles.timeModeTabActive : ""}`}
@@ -91,54 +97,53 @@ export default function AddTaskModal({ onAdd, onClose, initDate }) {
 
               <button className={styles.timeClearBtn} onClick={() => form.setHasTime(false)}>해제</button>
             </div>
-          ) : (
-            <button className={styles.fieldBtn} onClick={() => form.setHasTime(true)}>시간 설정</button>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldIcon}>📍</span>
-          <input value={form.location} onChange={(e) => form.setLocation(e.target.value)} placeholder="장소" className={styles.fieldInput} />
-        </div>
+        {form.location && (
+          <div className={styles.fieldRow}>
+            <span className={styles.fieldIcon}>📍</span>
+            <input value={form.location} onChange={(e) => form.setLocation(e.target.value)} placeholder="장소" className={styles.fieldInput} />
+          </div>
+        )}
 
         {/* 소요시간 · 마감시한 */}
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldIcon}>⏱️</span>
-          <input value={form.duration} onChange={(e) => form.setDuration(e.target.value)} placeholder="소요시간 (예: 1시간, 30분)" className={styles.fieldInput} />
-        </div>
+        {form.duration && (
+          <div className={styles.fieldRow}>
+            <span className={styles.fieldIcon}>⏱️</span>
+            <input value={form.duration} onChange={(e) => form.setDuration(e.target.value)} placeholder="소요시간 (예: 1시간, 30분)" className={styles.fieldInput} />
+          </div>
+        )}
 
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldIcon}>📅</span>
-          <input type="date" value={form.deadline} onChange={(e) => form.setDeadline(e.target.value)} min={getDateStr(0)} className={styles.deadlineInput} />
-          {!form.deadline && <span className={styles.deadlinePlaceholder}>마감시한</span>}
-        </div>
+        {form.deadline && (
+          <div className={styles.fieldRow}>
+            <span className={styles.fieldIcon}>📅</span>
+            <input type="date" value={form.deadline} onChange={(e) => form.setDeadline(e.target.value)} min={getDateStr(0)} className={styles.deadlineInput} />
+          </div>
+        )}
 
         {/* 연락처 · 참석자 · 담당자 */}
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldIcon}>📞</span>
-          <input value={form.contact} onChange={(e) => form.setContact(e.target.value)} placeholder="연락처" className={styles.fieldInput} />
-        </div>
+        {form.contact && (
+          <div className={styles.fieldRow}>
+            <span className={styles.fieldIcon}>📞</span>
+            <input value={form.contact} onChange={(e) => form.setContact(e.target.value)} placeholder="연락처" className={styles.fieldInput} />
+          </div>
+        )}
 
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldIcon}>👥</span>
-          <input value={form.attendees} onChange={(e) => form.setAttendees(e.target.value)} placeholder="참석자" className={styles.fieldInput} />
-        </div>
+        {form.attendees && (
+          <div className={styles.fieldRow}>
+            <span className={styles.fieldIcon}>👥</span>
+            <input value={form.attendees} onChange={(e) => form.setAttendees(e.target.value)} placeholder="참석자" className={styles.fieldInput} />
+          </div>
+        )}
 
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldIcon}>👤</span>
-          <input value={form.manager} onChange={(e) => form.setManager(e.target.value)} placeholder="담당자" className={styles.fieldInput} />
-        </div>
+        {form.manager && (
+          <div className={styles.fieldRow}>
+            <span className={styles.fieldIcon}>👤</span>
+            <input value={form.manager} onChange={(e) => form.setManager(e.target.value)} placeholder="담당자" className={styles.fieldInput} />
+          </div>
+        )}
 
-        {/* Submit */}
-        <div className={styles.footer}>
-          <button
-            className={styles.submitBtn}
-            style={{ opacity: form.title ? 1 : 0.4, cursor: form.title ? "pointer" : "default" }}
-            onClick={form.handleSubmit}
-          >
-            저장
-          </button>
-        </div>
       </div>
     </div>
   );
