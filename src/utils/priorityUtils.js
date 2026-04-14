@@ -87,6 +87,24 @@ export function getPriorityLabel(score) {
 }
 
 /**
+ * 우선순위 점수 기반으로 시간 미지정 태스크에 자동 시간을 배정한다.
+ *   80+ (지금 바로) → 09:00
+ *   60~79 (오전 중) → 10:30
+ *   40~59 (오후 가능) → 14:00
+ *   0~39 (여유 있음) → 17:00
+ *
+ * @param {object} task
+ * @returns {string} "HH:MM" 형식의 자동 배정 시간
+ */
+export function getAutoAssignedTime(task) {
+  const { score } = calcPriority(task);
+  if (score >= 80) return "09:00";
+  if (score >= 60) return "10:30";
+  if (score >= 40) return "14:00";
+  return "17:00";
+}
+
+/**
  * task의 기한/미루기 상태에 따른 압박 메시지 생성
  */
 export function getDeadlineInfo(task) {

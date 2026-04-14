@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { sendNotification, requestNotificationPermission } from "../utils/notifications";
 import { getDateStr } from "../utils/dateUtils";
 import { CATEGORIES } from "../constants/categories";
+import { getAutoAssignedTime } from "../utils/priorityUtils";
 import { scheduleAlarm as swScheduleAlarm, onSWMessage } from "../utils/swRegistration";
 import { takeoverScreen } from "../utils/screenTakeover";
 
@@ -115,23 +116,24 @@ export default function useAlarmScheduler(tasks) {
       const snoozeMap = snoozeMapRef.current;
 
       for (const task of tasks) {
-        if (task.completed || task.date !== today || !task.time) continue;
+        if (task.completed || task.date !== today) continue;
 
         const taskId = String(task.id);
+        // 시간 미지정 → 우선순위 기반 자동 배정
+        const effectiveTime = task.time || getAutoAssignedTime(task);
 
         // 스누즈 체크
         if (snoozeMap[taskId]) {
           if (Date.now() < snoozeMap[taskId]) continue;
           delete snoozeMap[taskId];
           saveSnoozeMap(snoozeMap);
-          // 스누즈 만료 시 해당 단계 재트리거 허용
           const triggered = triggeredRef.current[taskId] || {};
           triggered.main5 = false;
           triggeredRef.current[taskId] = triggered;
         }
 
         const triggered = triggeredRef.current[taskId] || { pre15: false, main5: false, urgent0: false };
-        const arrivalMinutes = timeStrToMinutes(task.time);
+        const arrivalMinutes = timeStrToMinutes(effectiveTime);
         const departureMinutes = arrivalMinutes - (task.travelTime || 0) - (task.prepTime || 0);
         const diff = departureMinutes - now; // 출발까지 남은 분
 
