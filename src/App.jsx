@@ -266,7 +266,7 @@ export default function App() {
       <div style={{ position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)", zIndex: 100 }}>
         <button onClick={() => setShowAddModal(true)} style={{
           display: "flex", alignItems: "center", gap: 10,
-          padding: "16px 32px", borderRadius: 50, border: "none",
+          padding: "16px 32px", borderRadius: 14, border: "none",
           background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "#fff",
           fontSize: 16, fontWeight: 800, fontFamily: FONT_FAMILY, cursor: "pointer",
           animation: "floatPulse 3s ease-in-out infinite",
