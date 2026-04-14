@@ -69,7 +69,7 @@ export default function SettingsScreen({ media, setMedia, pet, setPet, petType, 
             <div className={styles.headerTitle}>설정</div>
             <div className={styles.headerSub}>감각 전환 알림 설정</div>
           </div>
-          <button className={styles.closeBtn} onClick={onClose} style={hasChanges ? { background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "#fff", border: "none" } : undefined}>
+          <button className={styles.closeBtn} onClick={onClose} style={hasChanges ? { background: "linear-gradient(135deg, #D4AF37, #1A233A)", color: "#fff", border: "none" } : undefined}>
             {hasChanges ? "설정완료" : "닫기"}
           </button>
         </div>
@@ -130,15 +130,15 @@ export default function SettingsScreen({ media, setMedia, pet, setPet, petType, 
                   key={k}
                   className={styles.petTypeBtn}
                   style={{
-                    borderColor: petType === k ? "#0891b2" : "var(--border)",
-                    background: petType === k ? "#0891b215" : "transparent",
+                    borderColor: petType === k ? "#D4AF37" : "var(--border)",
+                    background: petType === k ? "#D4AF3715" : "transparent",
                   }}
                   onClick={() => handlePetTypeChange(k)}
                 >
                   <div style={{ fontSize: 28, marginBottom: 4 }}>{v.emoji}</div>
                   <div style={{
                     fontSize: 12, fontWeight: petType === k ? 800 : 500,
-                    color: petType === k ? "#0891b2" : "var(--text-secondary)",
+                    color: petType === k ? "#D4AF37" : "var(--text-secondary)",
                   }}>{v.name}</div>
                 </button>
               ))}

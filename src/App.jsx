@@ -175,9 +175,9 @@ export default function App() {
         <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
           {installPrompt && (
             <button onClick={handleInstall} style={{
-              background: "linear-gradient(135deg, #0891b2, #0e7490)", border: "none", borderRadius: 10,
+              background: "linear-gradient(135deg, #D4AF37, #1A233A)", border: "none", borderRadius: 10,
               padding: "8px 14px", color: "#fff", fontSize: 12, fontWeight: 700,
-              fontFamily: FONT_FAMILY, cursor: "pointer", boxShadow: "0 2px 12px #0891b233",
+              fontFamily: FONT_FAMILY, cursor: "pointer", boxShadow: "0 2px 12px #D4AF3733",
             }}>📲 설치</button>
           )}
           <button onClick={() => setShowSettings(true)} style={{
@@ -202,9 +202,9 @@ export default function App() {
             return (
               <button key={d} onClick={() => setSelDate(d)} style={{
                 padding: "10px 18px", borderRadius: 14,
-                border: `1.5px solid ${sel ? "#0891b2" : "var(--border)"}`,
-                background: sel ? "#0891b218" : "var(--card-bg)",
-                color: sel ? "#0891b2" : "var(--text-secondary)",
+                border: `1.5px solid ${sel ? "#D4AF37" : "var(--border)"}`,
+                background: sel ? "#D4AF3718" : "var(--card-bg)",
+                color: sel ? "#D4AF37" : "var(--text-secondary)",
                 fontSize: 14, fontWeight: sel ? 800 : 500,
                 fontFamily: FONT_FAMILY, cursor: "pointer", flexShrink: 0,
               }}>
@@ -212,7 +212,7 @@ export default function App() {
                 {cnt > 0 && (
                   <span style={{
                     display: "inline-block", marginLeft: 6,
-                    background: sel ? "#0891b2" : "var(--border)",
+                    background: sel ? "#D4AF37" : "var(--border)",
                     color: sel ? "#fff" : "var(--text-muted)",
                     fontSize: 11, fontWeight: 700, borderRadius: 8, padding: "1px 7px",
                   }}>{cnt}</span>
@@ -264,10 +264,10 @@ export default function App() {
         <button onClick={() => setShowAddModal(true)} style={{
           display: "flex", alignItems: "center", gap: 10,
           padding: "16px 32px", borderRadius: 14, border: "none",
-          background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "#fff",
+          background: "linear-gradient(135deg, #D4AF37, #1A233A)", color: "#fff",
           fontSize: 16, fontWeight: 800, fontFamily: FONT_FAMILY, cursor: "pointer",
           animation: "floatPulse 3s ease-in-out infinite",
-          boxShadow: "0 8px 32px #0891b255",
+          boxShadow: "0 8px 32px #D4AF3755",
         }}>
           <span style={{ fontSize: 22, lineHeight: 1 }}>+</span>
           <span>할 일 추가</span>

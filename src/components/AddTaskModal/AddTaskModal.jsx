@@ -218,7 +218,7 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
               </button>
               <button onClick={analyze} disabled={!nlInput.trim() || isAnalyzing} className={styles.analyzeBtn}
                 style={{
-                  background: nlInput.trim() && !isAnalyzing ? "linear-gradient(135deg, #0891b2, #0e7490)" : "var(--border)",
+                  background: nlInput.trim() && !isAnalyzing ? "linear-gradient(135deg, #D4AF37, #1A233A)" : "var(--border)",
                   color: nlInput.trim() && !isAnalyzing ? "#fff" : "var(--text-muted)",
                   cursor: nlInput.trim() && !isAnalyzing ? "pointer" : "default",
                 }}>
@@ -322,7 +322,7 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
             {/* 버튼 */}
             <div className={styles.actionRow}>
               <button className={styles.submitBtn} disabled={!aiResult.title}
-                style={{ background: aiResult.title ? "#0891b2" : "var(--border)", color: aiResult.title ? "#fff" : "var(--text-muted)" }}
+                style={{ background: aiResult.title ? "#D4AF37" : "var(--border)", color: aiResult.title ? "#fff" : "var(--text-muted)" }}
                 onClick={doAddFromAI}>추가</button>
             </div>
           </>

@@ -277,7 +277,7 @@ export default function SensoryAlarm({ task, media, snoozeCount = 0, skipSensory
                   key={i}
                   className={styles.musicBar}
                   style={{
-                    background: `linear-gradient(to top, ${categoryInfo.color || "#0891b2"}, rgba(255,255,255,0.8))`,
+                    background: `linear-gradient(to top, ${categoryInfo.color || "#D4AF37"}, rgba(255,255,255,0.8))`,
                     height: `${20 + Math.random() * 80}%`,
                     animation: `musicBar${i % 3} ${0.4 + Math.random() * 0.6}s ease-in-out infinite alternate`,
                   }}
@@ -356,9 +356,9 @@ export default function SensoryAlarm({ task, media, snoozeCount = 0, skipSensory
 
           {/* 헤더 */}
           <div className={styles.infoHeader} style={{
-            background: `linear-gradient(135deg, ${categoryInfo.color || "#0891b2"}22, ${categoryInfo.color || "#0891b2"}08)`,
+            background: `linear-gradient(135deg, ${categoryInfo.color || "#D4AF37"}22, ${categoryInfo.color || "#D4AF37"}08)`,
           }}>
-            <div className={styles.infoHeaderLabel} style={{ color: categoryInfo.color || "#0891b2" }}>
+            <div className={styles.infoHeaderLabel} style={{ color: categoryInfo.color || "#D4AF37" }}>
               ⚡ 지금 멈추세요
             </div>
             <div className={styles.infoHeaderTitle}>
@@ -443,8 +443,8 @@ export default function SensoryAlarm({ task, media, snoozeCount = 0, skipSensory
                   onClick={() => toggleCheck(i)}
                 >
                   <div className={styles.checkbox} style={{
-                    background: checkedItems.has(i) ? (categoryInfo.color || "#0891b2") : "transparent",
-                    borderColor: checkedItems.has(i) ? (categoryInfo.color || "#0891b2") : "#444",
+                    background: checkedItems.has(i) ? (categoryInfo.color || "#D4AF37") : "transparent",
+                    borderColor: checkedItems.has(i) ? (categoryInfo.color || "#D4AF37") : "#444",
                   }}>
                     {checkedItems.has(i) && "✓"}
                   </div>
@@ -491,7 +491,7 @@ export default function SensoryAlarm({ task, media, snoozeCount = 0, skipSensory
               className={styles.confirmButton}
               style={{
                 background: allChecked
-                  ? `linear-gradient(135deg, ${categoryInfo.color || "#0891b2"}, ${categoryInfo.color || "#0891b2"}cc)`
+                  ? `linear-gradient(135deg, ${categoryInfo.color || "#D4AF37"}, ${categoryInfo.color || "#D4AF37"}cc)`
                   : `linear-gradient(135deg, #666, #555)`,
                 transform: allChecked ? "scale(1.02)" : "scale(1)",
               }}

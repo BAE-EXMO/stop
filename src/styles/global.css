@@ -8,10 +8,11 @@
   --card-bg: #fff;
   --card-done-bg: #f0fdf4;
   --border: #e8eaed;
-  --text-primary: #1a1a2e;
-  --text-secondary: #888;
-  --text-muted: #bbb;
-  --accent: #0891b2;
+  --text-primary: #1A233A;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --accent: #D4AF37;
+  --accent-dark: #1A233A;
   --input-bg: #f7f8fa;
 }
 
@@ -41,8 +42,8 @@ body {
 }
 
 @keyframes floatPulse {
-  0%, 100% { box-shadow: 0 8px 32px #0891b255; }
-  50%      { box-shadow: 0 8px 48px #0891b288; }
+  0%, 100% { box-shadow: 0 8px 32px #D4AF3755; }
+  50%      { box-shadow: 0 8px 48px #D4AF3788; }
 }
 
 @keyframes floatUp {
