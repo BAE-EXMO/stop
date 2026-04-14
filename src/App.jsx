@@ -223,51 +223,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* AI 스마트 정렬 배너 */}
-      {hasAISort && (
-        <div style={{ padding: "8px 24px" }}>
-          <div style={{
-            background: "#1C7ED611", border: "1px solid #1C7ED622", borderRadius: 12,
-            padding: "10px 14px", display: "flex", alignItems: "center", gap: 10,
-          }}>
-            <span style={{ fontSize: 16 }}>🧠</span>
-            <div>
-              <div style={{ fontSize: 12, color: "#1C7ED6", fontFamily: FONT_FAMILY, fontWeight: 700 }}>AI 스마트 정렬</div>
-              <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: FONT_FAMILY }}>영업시간·긴급도 기반 순서</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* "가장 먼저" 위젯 */}
-      {nextTask && (
-        <div style={{ padding: "8px 24px" }}>
-          <div style={{
-            background: "var(--card-bg)", borderRadius: 14, padding: "14px 18px",
-            display: "flex", alignItems: "center", gap: 12,
-            border: "1px solid var(--border)", cursor: "pointer",
-          }} onClick={() => handleTaskTap(nextTask)}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 12,
-              background: "linear-gradient(135deg, #0891b222, #0891b244)",
-              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
-            }}>⏳</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 700 }}>가장 먼저</div>
-              <div style={{
-                fontSize: 11, color: "var(--text-muted)", marginTop: 2,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-              }}>
-                {nextTask.date !== getDateStr(0) ? getDateLabel(nextTask.date) + " · " : ""}{nextTask.title}
-              </div>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 20, fontWeight: 900, color: "#0891b2" }}>{nextTask.time || "AI"}</div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* 날짜 섹션 헤더 */}
       <div style={{
         padding: "8px 24px 4px", fontSize: 12, fontWeight: 700,
