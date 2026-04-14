@@ -235,11 +235,6 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
         {/* ═══ AI 결과 프리뷰 ═══ */}
         {mode === "natural" && aiResult && (
           <>
-            <div className={styles.aiSuccessBox}>
-              <div className={styles.aiSuccessTitle}>✅ 분석 완료 — 아래 내용을 확인하세요</div>
-              <div className={styles.aiSuccessHint}>수정이 필요하면 각 항목을 직접 고칠 수 있습니다</div>
-            </div>
-
             {/* 방문기록 매칭 카드 */}
             {historyMatches.length > 0 && (
               <div className={styles.visitCard}>
@@ -255,8 +250,12 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
                         {place.dist} · 방문 {place.visits}회
                       </div>
                     </div>
-                    <button className={styles.visitCardBtn} onClick={() => selectPlace(place)}>
-                      {selectedPlace?.name === place.name ? "✅ 선택됨" : "선택"}
+                    <button
+                      className={styles.visitCardBtn}
+                      style={selectedPlace?.name === place.name ? { background: "#ef444418", borderColor: "#ef444444", color: "#ef4444" } : undefined}
+                      onClick={() => selectedPlace?.name === place.name ? setSelectedPlace(null) : selectPlace(place)}
+                    >
+                      {selectedPlace?.name === place.name ? "취소" : "선택"}
                     </button>
                   </div>
                 ))}
