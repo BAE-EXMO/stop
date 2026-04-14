@@ -1,0 +1,183 @@
+.widget {
+  width: 100%;
+  background: var(--card-bg, #fff);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid;
+  cursor: pointer;
+  text-align: left;
+}
+
+/* ─── 아바타 영역 ─── */
+.avatarArea {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.petEmoji {
+  font-size: 38px;
+  line-height: 1;
+}
+
+/* 기분 말풍선 */
+.moodBubble {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: bubblePop 2s ease-in-out infinite;
+}
+
+.moodFace {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ─── 정보 영역 ─── */
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary, #1a1a2e);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.moodLabel {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.hpRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.hpTrack {
+  flex: 1;
+  height: 7px;
+  background: var(--border, #e8eaed);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.hpFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.hpText {
+  font-size: 12px;
+  font-weight: 800;
+  font-family: 'Noto Sans KR', sans-serif;
+  min-width: 24px;
+  text-align: right;
+}
+
+.stats {
+  font-size: 10px;
+  color: var(--text-muted, #bbb);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.streak {
+  color: #E8590C;
+  font-weight: 700;
+}
+
+/* ═══ 기분별 애니메이션 ═══ */
+
+/* 81~100: 행복 — 통통 튀기 */
+.animHappy {
+  animation: bounceHappy 1.5s ease-in-out infinite;
+}
+
+/* 61~80: 만족 — 느리게 좌우 흔들기 */
+.animContent {
+  animation: swayContent 2.5s ease-in-out infinite;
+}
+
+/* 41~60: 평범 — 느린 호흡 */
+.animIdle {
+  animation: breatheIdle 3s ease-in-out infinite;
+}
+
+/* 21~40: 슬픔 — 축 처지기 */
+.animSad {
+  animation: droopSad 2s ease-in-out infinite;
+  filter: saturate(0.7);
+}
+
+/* 0~20: 힘듦 — 덜덜 떨기 */
+.animCry {
+  animation: shakeCry 0.5s ease-in-out infinite;
+  filter: saturate(0.4) brightness(0.9);
+}
+
+/* ═══ Keyframes ═══ */
+
+@keyframes bounceHappy {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-6px) rotate(-3deg); }
+  75% { transform: translateY(-3px) rotate(3deg); }
+}
+
+@keyframes swayContent {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-4deg); }
+  75% { transform: rotate(4deg); }
+}
+
+@keyframes breatheIdle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+@keyframes droopSad {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+
+@keyframes shakeCry {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+@keyframes bubblePop {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}

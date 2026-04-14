@@ -1,59 +1,57 @@
 import { PET_TYPES, getPetMood, getPetStage } from "../../utils/petSystem";
 import { FONT_FAMILY } from "../../constants/fonts";
+import styles from "./PetWidget.module.css";
 
 /**
  * 메인 화면에 표시되는 반려동물 상태 위젯
+ * HP에 따라 펫 표정 애니메이션이 달라짐
  */
 export default function PetWidget({ pet, petType, onClick }) {
   const pt = PET_TYPES[petType];
   const mood = getPetMood(pet.hp);
   const stage = getPetStage(pet.xp);
 
+  // HP에 따른 애니메이션 클래스
+  let animClass = styles.animIdle;
+  if (pet.hp >= 81) animClass = styles.animHappy;
+  else if (pet.hp >= 61) animClass = styles.animContent;
+  else if (pet.hp >= 41) animClass = styles.animIdle;
+  else if (pet.hp >= 21) animClass = styles.animSad;
+  else animClass = styles.animCry;
+
   return (
-    <button onClick={onClick} style={{
-      width: "100%", background: "var(--card-bg)", borderRadius: 16,
-      padding: "14px 18px", display: "flex", alignItems: "center", gap: 14,
-      border: `1px solid ${mood.color}33`, cursor: "pointer", textAlign: "left",
-    }}>
-      {/* 아바타 */}
-      <div style={{
-        width: 48, height: 48, borderRadius: 14,
-        background: `${mood.color}15`, display: "flex", alignItems: "center",
-        justifyContent: "center", fontSize: 28,
-        border: `1px solid ${mood.color}33`, flexShrink: 0,
-      }}>
-        {pt.stages[stage]}
+    <button className={styles.widget} onClick={onClick} style={{ borderColor: `${mood.color}33` }}>
+      {/* 펫 아바타 (크게) */}
+      <div className={styles.avatarArea}>
+        <div className={`${styles.avatar} ${animClass}`} style={{ background: `${mood.color}10`, borderColor: `${mood.color}22` }}>
+          <span className={styles.petEmoji}>{pt.stages[stage]}</span>
+        </div>
+        {/* 기분 표정 말풍선 */}
+        <div className={styles.moodBubble} style={{ background: `${mood.color}15`, borderColor: `${mood.color}33` }}>
+          <span className={styles.moodFace}>{mood.face}</span>
+        </div>
       </div>
 
       {/* 정보 */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-          <span style={{ fontSize: 14, fontWeight: 800, color: "var(--text-primary)", fontFamily: FONT_FAMILY }}>
-            {pet.name}
-          </span>
-          <span style={{ fontSize: 11, color: mood.color, fontWeight: 700, fontFamily: FONT_FAMILY }}>
-            {mood.face} {mood.label}
-          </span>
+      <div className={styles.info}>
+        <div className={styles.nameRow}>
+          <span className={styles.name}>{pet.name}</span>
+          <span className={styles.moodLabel} style={{ color: mood.color }}>{mood.label}</span>
         </div>
 
         {/* HP 바 */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ flex: 1, height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
-            <div style={{
-              width: `${pet.hp}%`, height: "100%",
-              background: mood.color, borderRadius: 3, transition: "width 0.5s ease",
-            }} />
+        <div className={styles.hpRow}>
+          <div className={styles.hpTrack}>
+            <div className={styles.hpFill} style={{ width: `${pet.hp}%`, background: mood.color }} />
           </div>
-          <span style={{ fontSize: 11, fontWeight: 700, color: mood.color, fontFamily: FONT_FAMILY, flexShrink: 0 }}>
-            {pet.hp}/100
-          </span>
+          <span className={styles.hpText} style={{ color: mood.color }}>{pet.hp}</span>
         </div>
 
         {/* 통계 */}
-        <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: FONT_FAMILY, marginTop: 3 }}>
+        <div className={styles.stats}>
           완수 {pet.completions}회 · 경험치 {pet.xp}
           {pet.streak > 0 && (
-            <span style={{ color: "#E8590C", fontWeight: 700 }}> · 🔥 {pet.streak}일 연속</span>
+            <span className={styles.streak}> · {pet.streak}일 연속</span>
           )}
         </div>
       </div>
