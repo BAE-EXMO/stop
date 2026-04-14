@@ -312,7 +312,7 @@ export default function SensoryAlarm({ task, media, snoozeCount = 0, skipSensory
                 <div className={styles.postponeWarning} style={{
                   color: (task.postponeCount || 0) >= 3 ? "#ef4444" : "#f59e0b",
                 }}>
-                  이전에 {task.postponeCount}번 미뤘습니다
+                  {task.postponeCount}번 미뤘지만, 이번엔 해봐요!
                 </div>
               )}
             </div>
@@ -505,7 +505,7 @@ export default function SensoryAlarm({ task, media, snoozeCount = 0, skipSensory
           {showSnoozeConfirm && (
             <div className={styles.snoozeDialog}>
               <div className={styles.snoozeDialogContent}>
-                <div className={styles.snoozeDialogTitle}>😤 이미 2번 미뤘습니다</div>
+                <div className={styles.snoozeDialogTitle}>🤝 벌써 2번 미뤘어요</div>
                 <div className={styles.snoozeDialogText}>
                   정말 미루시겠습니까? 이 할 일은 내일로 이동됩니다.
                 </div>

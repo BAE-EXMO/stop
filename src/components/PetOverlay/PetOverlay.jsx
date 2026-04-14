@@ -106,7 +106,7 @@ export function PetSadOverlay({ pet, petType, lost, onClose }) {
         </div>
         <div style={{ fontSize: 28, marginBottom: 8 }}>{mood.face}</div>
         <div style={{ fontSize: 16, fontWeight: 800, color: "#E8590C", fontFamily: FONT_FAMILY, marginBottom: 4 }}>
-          {pt.name}가 힘들어해요...
+          {pt.name}가 기다리고 있어요...
         </div>
         <div style={{ fontSize: 13, color: "#888", fontFamily: FONT_FAMILY }}>
           체력 -{lost} (미루기)

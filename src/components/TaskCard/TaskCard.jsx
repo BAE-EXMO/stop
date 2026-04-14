@@ -85,7 +85,7 @@ export default function TaskCard({ task, rank, onDelete, onComplete, onPostpone,
             color: task.postponeCount >= 3 ? "#E03131" : task.postponeCount >= 2 ? "#E8590C" : "#E67700",
             background: task.postponeCount >= 3 ? "#E0313112" : task.postponeCount >= 2 ? "#E8590C12" : "#E6770012",
           }}>
-            {task.postponeCount >= 3 ? `😤 ${task.postponeCount}번 미룸` : task.postponeCount >= 2 ? `😟 ${task.postponeCount}번 미룸` : `⏰ ${task.postponeCount}번 미룸`}
+            {task.postponeCount >= 3 ? `💪 ${task.postponeCount}번 미룸 · 이번엔 해봐요!` : task.postponeCount >= 2 ? `🤝 ${task.postponeCount}번 미룸 · 지금 하면 개운해요` : `⏰ ${task.postponeCount}번 미룸`}
           </span>
         </div>
       )}

@@ -125,10 +125,10 @@ export function getDeadlineInfo(task) {
   if (postponed > 0) {
     const postponeMsg =
       postponed >= 3
-        ? `😤 이미 ${postponed}번 미뤘습니다. 그만 미루세요!`
+        ? `💪 ${postponed}번 미뤘지만, 이번엔 할 수 있어요!`
         : postponed >= 2
-          ? `😟 ${postponed}번째 미루는 중입니다`
-          : `⏰ 1번 미룬 할 일입니다`;
+          ? `🤝 ${postponed}번째예요. 지금 하면 개운해질 거예요`
+          : `⏰ 1번 미뤘어요. 오늘 해볼까요?`;
     msg += " · " + postponeMsg;
     if (postponed >= 2) {
       color = "#E03131";
