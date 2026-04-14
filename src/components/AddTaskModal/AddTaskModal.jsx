@@ -206,6 +206,7 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
             <button className={`${styles.modeTab} ${mode === "natural" ? styles.modeTabActive : ""}`} onClick={() => setMode("natural")}>🤖 AI입력</button>
             <button className={`${styles.modeTab} ${mode === "manual" ? styles.modeTabActive : ""}`} onClick={() => setMode("manual")}>✏️ 직접입력</button>
           </div>
+          <button className={styles.headerClose} onClick={onClose}>✕</button>
         </div>
 
         {/* ═══ AI 자연어 모드 ═══ */}
