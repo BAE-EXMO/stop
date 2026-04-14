@@ -3,7 +3,6 @@ import { getDateStr } from "../../utils/dateUtils";
 import { extractFieldsFromText } from "../../utils/textExtractor";
 import { parseWithAI, hasAIKey } from "../../utils/aiParser";
 import { findSmartMatch, findHistoryMatches } from "../../utils/placeUtils";
-import { CATEGORIES } from "../../constants/categories";
 import { FONT_FAMILY } from "../../constants/fonts";
 import useAddTaskForm from "../../hooks/useAddTaskForm";
 import styles from "./AddTaskModal.module.css";
@@ -13,14 +12,6 @@ const QUICK_DATES = [
   { label: "내일", value: getDateStr(1) },
 ];
 
-const RECURRING_TYPES = [
-  { key: "none", label: "없음" },
-  { key: "weekly", label: "매주" },
-  { key: "monthly", label: "매월" },
-  { key: "yearly", label: "매년" },
-];
-
-const WEEKDAYS = ["월","화","수","목","금","토","일"];
 
 export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = [] }) {
   const form = useAddTaskForm({ initDate, onAdd });
@@ -34,12 +25,6 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
   const [historyMatches, setHistoryMatches] = useState([]);
   const [smartMatch, setSmartMatch] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
-  // 반복 일정
-  const [recurring, setRecurring] = useState("none");
-  const [recurringDays, setRecurringDays] = useState([]); // 매주 요일
-  const [recurringDate, setRecurringDate] = useState(25); // 매월 날짜
-  const [recurringMonth, setRecurringMonth] = useState(1);
-  const [recurringMonthDay, setRecurringMonthDay] = useState(1);
 
   const recognitionRef = useRef(null);
   const textareaRef = useRef(null);
@@ -192,7 +177,6 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
       deadline: aiResult.deadline || "",
       duration: "", contact: aiResult.phone || "", attendees: "", manager: "",
       postponeCount: 0, completed: false,
-      recurring, recurringDays, recurringDate, recurringMonth, recurringMonthDay,
     });
   };
 
@@ -346,57 +330,8 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
               <textarea value={(aiResult.prepItems || []).join("\n")} onChange={(e) => setAiResult({ ...aiResult, prepItems: e.target.value.split("\n").filter((l) => l.trim()) })} rows={3} className={styles.noteArea} style={{ minHeight: 80 }} />
             </div>
 
-            {/* 카테고리 */}
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>카테고리</label>
-              <div className={styles.catRow}>
-                {Object.entries(CATEGORIES).map(([k, v]) => (
-                  <button key={k} className={`${styles.catBtn} ${aiResult.category === k ? styles.catBtnActive : ""}`}
-                    style={{ borderColor: aiResult.category === k ? v.color : "var(--border)", background: aiResult.category === k ? v.color + "22" : "transparent", color: aiResult.category === k ? v.color : "var(--text-secondary)" }}
-                    onClick={() => setAiResult({ ...aiResult, category: k })}>{v.icon} {v.label}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* 반복 일정 */}
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>🔁 반복</label>
-              <div className={styles.catRow}>
-                {RECURRING_TYPES.map((rt) => (
-                  <button key={rt.key} className={`${styles.catBtn} ${recurring === rt.key ? styles.catBtnActive : ""}`}
-                    style={{ borderColor: recurring === rt.key ? "#0891b2" : "var(--border)", background: recurring === rt.key ? "#0891b218" : "transparent", color: recurring === rt.key ? "#0891b2" : "var(--text-secondary)" }}
-                    onClick={() => setRecurring(rt.key)}>{rt.label}</button>
-                ))}
-              </div>
-              {recurring === "weekly" && (
-                <div className={styles.recurringDetail}>
-                  {WEEKDAYS.map((d, i) => (
-                    <button key={d} className={`${styles.dayBtn} ${recurringDays.includes(i) ? styles.dayBtnActive : ""}`}
-                      onClick={() => setRecurringDays((prev) => prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i])}>{d}</button>
-                  ))}
-                </div>
-              )}
-              {recurring === "monthly" && (
-                <div className={styles.recurringDetail}>
-                  <span className={styles.recurringLabel}>매월</span>
-                  <input type="number" min={1} max={31} value={recurringDate} onChange={(e) => setRecurringDate(Number(e.target.value))} className={styles.recurringInput} />
-                  <span className={styles.recurringLabel}>일</span>
-                </div>
-              )}
-              {recurring === "yearly" && (
-                <div className={styles.recurringDetail}>
-                  <input type="number" min={1} max={12} value={recurringMonth} onChange={(e) => setRecurringMonth(Number(e.target.value))} className={styles.recurringInput} />
-                  <span className={styles.recurringLabel}>월</span>
-                  <input type="number" min={1} max={31} value={recurringMonthDay} onChange={(e) => setRecurringMonthDay(Number(e.target.value))} className={styles.recurringInput} />
-                  <span className={styles.recurringLabel}>일</span>
-                </div>
-              )}
-            </div>
-
             {/* 버튼 */}
             <div className={styles.actionRow}>
-              <button className={styles.resetBtn} onClick={() => { setAiResult(null); setNlInput(""); setSelectedPlace(null); setGuideVisible(true); }}>↩ 다시</button>
-              <button className={styles.cancelBtn} onClick={onClose}>취소</button>
               <button className={styles.submitBtn} disabled={!aiResult.title}
                 style={{ background: aiResult.title ? "#0891b2" : "var(--border)", color: aiResult.title ? "#fff" : "var(--text-muted)" }}
                 onClick={doAddFromAI}>추가</button>
@@ -472,35 +407,7 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
               <div className={styles.fieldRow}><span className={styles.fieldIcon}>📞</span><input value={form.contact} onChange={(e) => form.setContact(e.target.value)} placeholder="연락처" className={styles.fieldInputInline} /></div>
             )}
 
-            {/* 반복 일정 (직접입력) */}
-            <div className={styles.fieldGroup} style={{ marginTop: 12 }}>
-              <label className={styles.label}>🔁 반복</label>
-              <div className={styles.catRow}>
-                {RECURRING_TYPES.map((rt) => (
-                  <button key={rt.key} className={`${styles.catBtn} ${recurring === rt.key ? styles.catBtnActive : ""}`}
-                    style={{ borderColor: recurring === rt.key ? "#0891b2" : "var(--border)", background: recurring === rt.key ? "#0891b218" : "transparent", color: recurring === rt.key ? "#0891b2" : "var(--text-secondary)" }}
-                    onClick={() => setRecurring(rt.key)}>{rt.label}</button>
-                ))}
-              </div>
-              {recurring === "weekly" && (
-                <div className={styles.recurringDetail}>
-                  {WEEKDAYS.map((d, i) => (
-                    <button key={d} className={`${styles.dayBtn} ${recurringDays.includes(i) ? styles.dayBtnActive : ""}`}
-                      onClick={() => setRecurringDays((prev) => prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i])}>{d}</button>
-                  ))}
-                </div>
-              )}
-              {recurring === "monthly" && (
-                <div className={styles.recurringDetail}>
-                  <span className={styles.recurringLabel}>매월</span>
-                  <input type="number" min={1} max={31} value={recurringDate} onChange={(e) => setRecurringDate(Number(e.target.value))} className={styles.recurringInput} />
-                  <span className={styles.recurringLabel}>일</span>
-                </div>
-              )}
-            </div>
-
             <div className={styles.actionRow}>
-              <button className={styles.cancelBtn} onClick={onClose}>취소</button>
               <button className={styles.submitBtn} style={{ opacity: form.title ? 1 : 0.4, cursor: form.title ? "pointer" : "default" }} onClick={form.handleSubmit}>저장</button>
             </div>
           </>
