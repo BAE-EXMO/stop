@@ -229,17 +229,6 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
             {aiError && <div className={styles.errorBox}>{aiError}</div>}
 
             {/* 입력 가이드 (입력 시 접힘) */}
-            {guideVisible && (
-              <div className={styles.helpBox}>
-                <div className={styles.helpTitle}>💡 이렇게 입력하면 됩니다</div>
-                <div className={styles.helpText}>
-                  • "내일 3시 치과 예약인데 보험증 챙겨야 해"<br/>
-                  • "이번 달 25일까지 은행 가서 서류 제출"<br/>
-                  • "법무사한테 등기 서류 갖다줘야 해"<br/>
-                  • 🎤 버튼 누르고 그냥 말해도 됩니다
-                </div>
-              </div>
-            )}
           </>
         )}
 
