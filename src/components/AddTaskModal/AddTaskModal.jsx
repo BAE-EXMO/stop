@@ -202,10 +202,6 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.headerTitle}>새 할 일</div>
-          <div className={styles.modeTabs}>
-            <button className={`${styles.modeTab} ${mode === "natural" ? styles.modeTabActive : ""}`} onClick={() => setMode("natural")}>🤖 AI입력</button>
-            <button className={`${styles.modeTab} ${mode === "manual" ? styles.modeTabActive : ""}`} onClick={() => setMode("manual")}>✏️ 직접입력</button>
-          </div>
           <button className={styles.headerClose} onClick={onClose}>✕</button>
         </div>
 
@@ -242,7 +238,7 @@ export default function AddTaskModal({ onAdd, onClose, initDate, visitHistory = 
                   color: nlInput.trim() && !isAnalyzing ? "#fff" : "var(--text-muted)",
                   cursor: nlInput.trim() && !isAnalyzing ? "pointer" : "default",
                 }}>
-                {isAnalyzing ? <><span className={styles.spinner} />분석 중...</> : <>🧠 {hasAIKey() ? "AI 분석하기" : "텍스트 분석하기"}</>}
+                {isAnalyzing ? <><span className={styles.spinner} />저장 중...</> : <>저장하기</>}
               </button>
             </div>
 
