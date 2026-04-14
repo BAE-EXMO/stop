@@ -28,7 +28,7 @@ export default function TaskCard({ task, rank, onDelete, onComplete, onPostpone,
           </span>
         )}
         {task.completed && (
-          <span className={styles.doneBadge}>✅ 완료</span>
+          <span className={styles.doneBadge}>완료</span>
         )}
         <button className={styles.deleteBtn} onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}>✕</button>
       </div>
@@ -47,9 +47,12 @@ export default function TaskCard({ task, rank, onDelete, onComplete, onPostpone,
         </div>
         <div className={styles.titleBlock}>
           <div className={styles.title} data-completed={task.completed}>
-            {cat.icon} {task.title}
+            {task.title}
           </div>
-          <div className={styles.subtitle}>📍 {task.location || "미정"}</div>
+          <div className={styles.subtitle}>
+            <span className={styles.catLabel} style={{ color: cat.color }}>{cat.label}</span>
+            {task.location && task.location !== "미정" && <span> · {task.location}</span>}
+          </div>
         </div>
       </div>
 
@@ -73,7 +76,7 @@ export default function TaskCard({ task, rank, onDelete, onComplete, onPostpone,
             color: task.postponeCount >= 3 ? "#E03131" : task.postponeCount >= 2 ? "#E8590C" : "#E67700",
             background: task.postponeCount >= 3 ? "#E0313112" : task.postponeCount >= 2 ? "#E8590C12" : "#E6770012",
           }}>
-            {task.postponeCount >= 3 ? `💪 ${task.postponeCount}번 미룸 · 이번엔 해봐요!` : task.postponeCount >= 2 ? `🤝 ${task.postponeCount}번 미룸 · 지금 하면 개운해요` : `⏰ ${task.postponeCount}번 미룸`}
+            {task.postponeCount >= 3 ? `${task.postponeCount}번 미룸 · 이번엔 해봐요!` : task.postponeCount >= 2 ? `${task.postponeCount}번 미룸 · 지금 하면 개운해요` : `${task.postponeCount}번 미룸`}
           </span>
         </div>
       )}
@@ -81,13 +84,13 @@ export default function TaskCard({ task, rank, onDelete, onComplete, onPostpone,
       {/* 정보 배지 */}
       <div className={styles.infoBadges}>
         {task.time ? (
-          <span className={styles.infoBadge} style={{ color: cat.color, fontWeight: 700 }}>⏰ {task.time}</span>
+          <span className={styles.infoBadge} style={{ color: cat.color, fontWeight: 700 }}>{task.time}</span>
         ) : (
-          <span className={styles.infoBadge} style={{ color: "#1C7ED6", fontWeight: 600 }}>🧠 AI</span>
+          <span className={styles.infoBadge} style={{ color: "#1C7ED6", fontWeight: 600 }}>시간미정</span>
         )}
-        <span className={styles.infoBadge}>🚗 {formatTime(task.travelTime || 0)}</span>
-        {dep && <span className={styles.infoBadge}>🚀 {dep}</span>}
-        <span className={styles.infoBadge}>📋 {(task.prepItems || []).length}개</span>
+        <span className={styles.infoBadge}>이동 {formatTime(task.travelTime || 0)}</span>
+        {dep && <span className={styles.infoBadge}>출발 {dep}</span>}
+        <span className={styles.infoBadge}>준비물 {(task.prepItems || []).length}개</span>
       </div>
 
       {/* 빠른 액션 */}
@@ -97,29 +100,15 @@ export default function TaskCard({ task, rank, onDelete, onComplete, onPostpone,
         </div>
       )}
 
-      {/* 액션 버튼 */}
+      {/* 완료 버튼 */}
       {!task.completed ? (
         <div className={styles.actionBtns}>
-          <button
-            className={styles.actionBtn}
-            style={{ borderColor: cat.color + "44", background: cat.color + "11", color: cat.color }}
-            onClick={(e) => { e.stopPropagation(); onAlarm && onAlarm(task); }}
-          >
-            🔔 알림
-          </button>
-          <button
-            className={styles.actionBtn}
-            style={{ borderColor: "#E6770044", background: "#E6770011", color: "#E67700" }}
-            onClick={(e) => { e.stopPropagation(); onPostpone && onPostpone(task.id); }}
-          >
-            📅 내일로
-          </button>
           <button
             className={styles.actionBtn}
             style={{ borderColor: "#2B8A3E44", background: "#2B8A3E11", color: "#2B8A3E" }}
             onClick={(e) => { e.stopPropagation(); onComplete(task.id); }}
           >
-            ✅ 완료
+            완료
           </button>
         </div>
       ) : (
