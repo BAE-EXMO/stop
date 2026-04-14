@@ -22,7 +22,9 @@ export default function SettingsScreen({ media, setMedia, pet, setPet, petType, 
   const [editingPetName, setEditingPetName] = useState(false);
   const [petNameInput, setPetNameInput] = useState(pet?.name || "");
   const [hasChanges, setHasChanges] = useState(false);
+  const [audioFileName, setAudioFileName] = useState("");
   const markChanged = () => setHasChanges(true);
+  const hasVideoMedia = media.some((m) => m.type === "video" || m.type === "reel");
 
   const savePetName = () => {
     if (setPet) setPet((p) => ({ ...p, name: petNameInput.trim() || p.name }));
@@ -222,15 +224,45 @@ export default function SettingsScreen({ media, setMedia, pet, setPet, petType, 
 
         {/* Music / Audio */}
         <div className={styles.sectionTitle}>🎵 음악</div>
-        <div className={styles.sectionHint}>
-          알림 시 재생할 음악 URL을 입력하세요. 동영상/릴스는 자체 오디오가 재생됩니다.
-          비워두면 사진 표시 시 앰비언트 사운드가 자동 생성됩니다.
-        </div>
+        {hasVideoMedia ? (
+          <div className={styles.explainBox} style={{ marginBottom: 16 }}>
+            <div className={styles.explainTitle}>🔇 음악 자동 비활성</div>
+            <div className={styles.explainText}>
+              동영상 또는 릴스가 등록되어 있어 해당 미디어의 자체 오디오가 재생됩니다.
+              별도 음악 설정은 사진 전용입니다.
+            </div>
+          </div>
+        ) : (
+          <div className={styles.sectionHint}>
+            알림 시 재생할 음악을 설정하세요. 비워두면 앰비언트 사운드가 자동 재생됩니다.
+          </div>
+        )}
+
+        {/* 음악 파일 업로드 */}
         <div className={styles.addPhotoRow}>
+          <label className={styles.fileUploadBtn}>
+            📁 파일 선택
+            <input
+              type="file"
+              accept="audio/*"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                  saveAudioUrl(reader.result);
+                  setAudioFileName(file.name);
+                };
+                reader.readAsDataURL(file);
+                e.target.value = "";
+              }}
+            />
+          </label>
           <input
-            value={audioUrl}
-            onChange={(e) => saveAudioUrl(e.target.value)}
-            placeholder="음악 파일 URL (mp3, wav 등)"
+            value={audioUrl.startsWith("data:") ? "" : audioUrl}
+            onChange={(e) => { saveAudioUrl(e.target.value); setAudioFileName(""); }}
+            placeholder="또는 URL 직접 입력 (mp3, wav 등)"
             className={sharedStyles.inputField}
             style={{ flex: 1 }}
           />
@@ -238,8 +270,13 @@ export default function SettingsScreen({ media, setMedia, pet, setPet, petType, 
         <div className={styles.musicNote}>
           <div className={styles.musicText}>
             {audioUrl.trim()
-              ? "✅ 사용자 지정 음악이 설정되었습니다."
+              ? `✅ ${audioFileName || "사용자 지정 음악"}이 설정되었습니다.`
               : "🎶 음악 미설정 시 앰비언트 사운드가 자동 재생됩니다."}
+            {audioUrl.trim() && (
+              <button className={styles.musicClearBtn} onClick={() => { saveAudioUrl(""); setAudioFileName(""); }}>
+                삭제
+              </button>
+            )}
           </div>
         </div>
       </div>

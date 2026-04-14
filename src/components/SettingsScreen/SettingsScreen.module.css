@@ -180,6 +180,44 @@
   color: #888;
   font-family: 'Inter', 'Noto Sans KR', sans-serif;
   line-height: 1.6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.musicClearBtn {
+  background: none;
+  border: 1px solid #ef444444;
+  border-radius: 6px;
+  color: #ef4444;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.fileUploadBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border, #e8eaed);
+  background: var(--card-bg, #fff);
+  color: var(--text-secondary, #888);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+
+.fileUploadBtn:hover {
+  border-color: #0891b2;
+  color: #0891b2;
 }
 
 /* ── Pet Section ── */
