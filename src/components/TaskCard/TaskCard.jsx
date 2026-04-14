@@ -1,5 +1,6 @@
 import { CATEGORIES } from "../../constants/categories";
 import { calcPriority, getPriorityLabel, getDeadlineInfo } from "../../utils/priorityUtils";
+import QuickActions from "../QuickActions/QuickActions";
 import styles from "./TaskCard.module.css";
 
 function fmtTime(m) {
@@ -100,6 +101,13 @@ export default function TaskCard({ task, rank, onDelete, onComplete, onPostpone,
         {dep && <span className={styles.infoBadge}>🚀 {dep}</span>}
         <span className={styles.infoBadge}>📋 {(task.prepItems || []).length}개</span>
       </div>
+
+      {/* 빠른 액션 */}
+      {!task.completed && (
+        <div style={{ paddingLeft: 44, marginBottom: 10 }}>
+          <QuickActions task={task} size="small" />
+        </div>
+      )}
 
       {/* 액션 버튼 */}
       {!task.completed ? (

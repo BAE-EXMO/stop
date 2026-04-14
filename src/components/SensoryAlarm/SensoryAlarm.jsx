@@ -5,6 +5,7 @@ import useSensoryAudio from "../../hooks/useSensoryAudio";
 import { pickMedia, needsMorePhotos } from "../../utils/photoShuffler";
 import { calcUrgency, getPhaseTimings, URGENCY_LABELS } from "../../utils/urgencyUtils";
 import { recordAlert, getUserPrefs } from "../../utils/alertTracker";
+import QuickActions, { detectActions } from "../QuickActions/QuickActions";
 import styles from "./SensoryAlarm.module.css";
 
 /**
@@ -415,6 +416,14 @@ export default function SensoryAlarm({ task, media, snoozeCount = 0, skipSensory
                   <span className={styles.infoRowValue}>{row.value}</span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* 빠른 액션 */}
+          {detectActions(task).length > 0 && (
+            <div className={styles.quickActionSection}>
+              <div className={styles.quickActionTitle}>⚡ 바로 실행</div>
+              <QuickActions task={task} size="normal" />
             </div>
           )}
 

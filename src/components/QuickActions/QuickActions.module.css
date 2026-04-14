@@ -1,0 +1,51 @@
+.rowSmall {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rowNormal {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.btnSmall,
+.btnNormal {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  border: 1.5px solid;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.btnSmall:active,
+.btnNormal:active {
+  opacity: 0.7;
+}
+
+.btnSmall {
+  gap: 4px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.btnNormal {
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  border-radius: 12px;
+}
+
+.iconSmall {
+  font-size: 13px;
+}
+
+.iconNormal {
+  font-size: 16px;
+}

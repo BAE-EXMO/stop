@@ -338,6 +338,23 @@
   font-family: 'Noto Sans KR', sans-serif;
 }
 
+/* ─── 빠른 액션 ─── */
+.quickActionSection {
+  background: #1a1a1a;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  border: 1px solid #2a2a2a;
+}
+
+.quickActionTitle {
+  font-size: 12px;
+  color: #888;
+  font-weight: 700;
+  margin-bottom: 10px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
 /* ─── 체크리스트 ─── */
 .checklistSection {
   background: #1a1a1a;
