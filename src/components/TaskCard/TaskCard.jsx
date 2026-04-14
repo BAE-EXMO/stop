@@ -1,27 +1,15 @@
 import { CATEGORIES } from "../../constants/categories";
+import { formatTime, subtractMinutes } from "../../utils/dateUtils";
 import { calcPriority, getPriorityLabel, getDeadlineInfo } from "../../utils/priorityUtils";
 import QuickActions from "../QuickActions/QuickActions";
 import styles from "./TaskCard.module.css";
-
-function fmtTime(m) {
-  const h = Math.floor(m / 60);
-  const r = m % 60;
-  return h > 0 ? `${h}시간${r > 0 ? " " + r + "분" : ""}` : `${m}분`;
-}
-
-function subMin(ts, m) {
-  const [h, mi] = ts.split(":").map(Number);
-  let t = h * 60 + mi - m;
-  if (t < 0) t += 1440;
-  return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
-}
 
 export default function TaskCard({ task, rank, onDelete, onComplete, onPostpone, onAlarm, onTap }) {
   const cat = CATEGORIES[task.category] || { label: "기타", color: "#888", icon: "📌" };
   const pri = calcPriority(task);
   const pl = getPriorityLabel(pri.score);
   const dl = getDeadlineInfo(task);
-  const dep = task.time ? subMin(task.time, (task.travelTime || 0) + (task.prepTime || 0)) : null;
+  const dep = task.time ? subtractMinutes(task.time, (task.travelTime || 0) + (task.prepTime || 0)) : null;
 
   return (
     <div
@@ -97,7 +85,7 @@ export default function TaskCard({ task, rank, onDelete, onComplete, onPostpone,
         ) : (
           <span className={styles.infoBadge} style={{ color: "#1C7ED6", fontWeight: 600 }}>🧠 AI</span>
         )}
-        <span className={styles.infoBadge}>🚗 {fmtTime(task.travelTime || 0)}</span>
+        <span className={styles.infoBadge}>🚗 {formatTime(task.travelTime || 0)}</span>
         {dep && <span className={styles.infoBadge}>🚀 {dep}</span>}
         <span className={styles.infoBadge}>📋 {(task.prepItems || []).length}개</span>
       </div>

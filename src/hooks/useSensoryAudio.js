@@ -19,7 +19,6 @@ export default function useSensoryAudio(shouldPlay) {
   const audioRef = useRef(null);
   const ctxRef = useRef(null);
   const gainRef = useRef(null);
-  const analyserRef = useRef(null);
   const cleanupRef = useRef(null);
   const fadeTimeoutRef = useRef(null);
 
@@ -73,12 +72,7 @@ export default function useSensoryAudio(shouldPlay) {
         mainGain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 1);
         gainRef.current = mainGain;
 
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 64;
-        analyserRef.current = analyser;
-
-        mainGain.connect(analyser);
-        analyser.connect(ctx.destination);
+        mainGain.connect(ctx.destination);
 
         const oscillators = [];
 
@@ -114,10 +108,9 @@ export default function useSensoryAudio(shouldPlay) {
             try { osc.stop(); } catch { /* already stopped */ }
           }
           try { lfo.stop(); } catch { /* already stopped */ }
-          ctx.close();
-          ctxRef.current = null;
           gainRef.current = null;
-          analyserRef.current = null;
+          if (ctx.state !== "closed") ctx.close();
+          ctxRef.current = null;
         };
       } catch {
         // Web Audio API 사용 불가
@@ -180,5 +173,5 @@ export default function useSensoryAudio(shouldPlay) {
     setIsPlaying(false);
   }, []);
 
-  return { isPlaying, stop, fadeOut, analyserNode: analyserRef.current };
+  return { isPlaying, stop, fadeOut };
 }

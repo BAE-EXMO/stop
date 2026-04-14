@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { CATEGORIES } from "./constants/categories";
 import { FONT_FAMILY } from "./constants/fonts";
-import { getDateStr } from "./utils/dateUtils";
+import { getDateStr, getDateLabel } from "./utils/dateUtils";
 import { calcPriority, getPriorityLabel, getDeadlineInfo } from "./utils/priorityUtils";
 import { createSampleTasks } from "./data/sampleTasks";
 import { DEFAULT_VISIT_HISTORY } from "./data/visitHistory";
@@ -21,15 +21,6 @@ import { PetFeedOverlay, PetSadOverlay } from "./components/PetOverlay/PetOverla
 
 import { takeoverScreen, releaseScreen } from "./utils/screenTakeover";
 import "./styles/global.css";
-
-function getDateLabel(ds) {
-  const t = getDateStr(0), tm = getDateStr(1);
-  if (ds === t) return "오늘";
-  if (ds === tm) return "내일";
-  const d = new Date(ds);
-  const wd = ["일","월","화","수","목","금","토"];
-  return `${d.getMonth()+1}/${d.getDate()} (${wd[d.getDay()]})`;
-}
 
 export default function App() {
   const [tasks, setTasks] = usePersistedState("memchwo-tasks", createSampleTasks);
@@ -67,8 +58,8 @@ export default function App() {
   };
 
   // Task CRUD
-  const addTask = (task) => { setTasks((prev) => [...prev, task]); setShowAddModal(false); };
-  const deleteTask = (id) => setTasks((prev) => prev.filter((t) => t.id !== id));
+  const addTask = useCallback((task) => { setTasks((prev) => [...prev, task]); setShowAddModal(false); }, [setTasks]);
+  const deleteTask = useCallback((id) => setTasks((prev) => prev.filter((t) => t.id !== id)), [setTasks]);
 
   const completeTask = (id) => {
     const task = tasks.find((t) => t.id === id);
@@ -129,40 +120,49 @@ export default function App() {
   }, [activeAlarm]);
 
   // ─── 날짜 탭 ───
-  const allDates = [...new Set([getDateStr(0), getDateStr(1), ...tasks.map((t) => t.date)])]
-    .filter((d) => d >= getDateStr(0))
-    .sort();
+  const allDates = useMemo(() =>
+    [...new Set([getDateStr(0), getDateStr(1), ...tasks.map((t) => t.date)])]
+      .filter((d) => d >= getDateStr(0))
+      .sort(),
+    [tasks]
+  );
 
   // 선택된 날짜의 태스크 (우선순위+마감 부스트 정렬)
-  const filtered = tasks
-    .filter((t) => t.date === selDate)
-    .map((t) => {
-      const p = calcPriority(t);
-      const dl = getDeadlineInfo(t);
-      let bonus = 0;
-      if (dl) {
-        if (dl.urgency >= 3) bonus = 40;
-        else if (dl.urgency >= 2) bonus = 25;
-        else if (dl.urgency >= 1) bonus = 10;
-      }
-      if ((t.postponeCount || 0) >= 3) bonus += 15;
-      else if ((t.postponeCount || 0) >= 2) bonus += 8;
-      return { ...t, _pri: { ...p, score: Math.min(100, p.score + bonus) } };
-    })
-    .sort((a, b) => {
-      if (a.completed !== b.completed) return a.completed ? 1 : -1;
-      return b._pri.score - a._pri.score;
-    });
+  const filtered = useMemo(() =>
+    tasks
+      .filter((t) => t.date === selDate)
+      .map((t) => {
+        const p = calcPriority(t);
+        const dl = getDeadlineInfo(t);
+        let bonus = 0;
+        if (dl) {
+          if (dl.urgency >= 3) bonus = 40;
+          else if (dl.urgency >= 2) bonus = 25;
+          else if (dl.urgency >= 1) bonus = 10;
+        }
+        if ((t.postponeCount || 0) >= 3) bonus += 15;
+        else if ((t.postponeCount || 0) >= 2) bonus += 8;
+        return { ...t, _pri: { ...p, score: Math.min(100, p.score + bonus) } };
+      })
+      .sort((a, b) => {
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
+        return b._pri.score - a._pri.score;
+      }),
+    [tasks, selDate]
+  );
 
   const doneCount = filtered.filter((t) => t.completed).length;
   const hasAISort = filtered.length > 1 && filtered.some((t) => !t.time);
 
   // "가장 먼저" — 모든 미래 태스크 중 가장 긴급한 것
-  const nextTask = [...tasks]
-    .filter((t) => !t.completed && t.date >= getDateStr(0))
-    .map((t) => ({ ...t, _pri: calcPriority(t) }))
-    .sort((a, b) => a.date === b.date ? b._pri.score - a._pri.score : a.date.localeCompare(b.date))
-    [0] || null;
+  const nextTask = useMemo(() =>
+    [...tasks]
+      .filter((t) => !t.completed && t.date >= getDateStr(0))
+      .map((t) => ({ ...t, _pri: calcPriority(t) }))
+      .sort((a, b) => a.date === b.date ? b._pri.score - a._pri.score : a.date.localeCompare(b.date))
+      [0] || null,
+    [tasks]
+  );
 
   return (
     <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "var(--bg-primary)", fontFamily: FONT_FAMILY, position: "relative", paddingBottom: 100 }}>
@@ -327,6 +327,7 @@ export default function App() {
         <SensoryAlarm
           task={activeAlarm} media={media}
           snoozeCount={getSnoozeCount(activeAlarm.id)}
+          skipSensory={alarmMode === "urgent"}
           onDismiss={handleAlarmDismiss} onSnooze={handleAlarmSnooze} onPostpone={handleAlarmPostpone}
         />
       )}
