@@ -19,136 +19,18 @@ import TaskCard from "./components/TaskCard/TaskCard";
 import { takeoverScreen, releaseScreen } from "./utils/screenTakeover";
 import "./styles/global.css";
 
-/**
- * 지금 해야 할 일 모달
- */
-function NowTaskModal({ task, onConfirm }) {
-  const categoryInfo = CATEGORIES[task.category];
-  const hasNotes = task.prepItems && task.prepItems.length > 0;
-  const hasDeadline = !!task.deadline;
-  const hasPostpone = task.postponeCount > 0;
-
-  const infoRows = [
-    task.time && { icon: "⏰", label: "시간", value: `${task.time}까지` },
-    task.location !== "미정" && { icon: "📍", label: "장소", value: task.location },
-    task.duration && { icon: "⏱️", label: "소요시간", value: task.duration },
-    task.contact && { icon: "📞", label: "연락처", value: task.contact },
-    task.attendees && { icon: "👥", label: "참석자", value: task.attendees },
-    task.manager && { icon: "👤", label: "담당자", value: task.manager },
-  ].filter(Boolean);
-
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 850, display: "flex", alignItems: "flex-start", justifyContent: "flex-end",
-      background: "rgba(0,0,0,0.15)",
-      backdropFilter: "blur(8px)",
-      padding: "16px",
-    }}>
-      <div style={{
-        width: "100%", maxWidth: 340, borderRadius: 18,
-        background: "#fff", border: "1px solid #e8eaed", padding: "24px 20px",
-        fontFamily: FONT_FAMILY, maxHeight: "80vh", overflowY: "auto",
-        boxShadow: "0 8px 40px rgba(0,0,0,0.1)",
-        animation: "slideInRight 0.3s ease-out",
-      }}>
-        {/* 슬로건 */}
-        <div style={{
-          textAlign: "center", marginBottom: 16, padding: "12px 0",
-          borderBottom: "2px solid #1a1a2e",
-        }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: "#0891b2", letterSpacing: 3, lineHeight: 1 }}>
-            STOP & DO IT
-          </div>
-        </div>
-
-        {/* 헤더 */}
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <div style={{ fontSize: 36, marginBottom: 8 }}>{categoryInfo.icon}</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: "#1a1a2e" }}>{task.title}</div>
-        </div>
-
-        {/* 상태 뱃지 */}
-        {(hasDeadline || hasPostpone) && (
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 16, flexWrap: "wrap" }}>
-            {hasDeadline && (
-              <span style={{
-                fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 6,
-                background: "#0891b210", color: "#0891b2", border: "1px solid #0891b233",
-              }}>
-                📅 마감 {task.deadline}
-              </span>
-            )}
-            {hasPostpone && (
-              <span style={{
-                fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 6,
-                background: task.postponeCount >= 3 ? "#ef444410" : "#f59e0b10",
-                color: task.postponeCount >= 3 ? "#ef4444" : "#e67700",
-                border: `1px solid ${task.postponeCount >= 3 ? "#ef444433" : "#e6770033"}`,
-              }}>
-                {task.postponeCount >= 3 ? "😤" : "⏰"} {task.postponeCount}번 미룸
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* 정보 행 */}
-        {infoRows.length > 0 && (
-          <div style={{
-            background: "#f7f8fa", borderRadius: 12, border: "1px solid #e8eaed",
-            padding: "4px 0", marginBottom: 12,
-          }}>
-            {infoRows.map((row, i) => (
-              <div key={i} style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "10px 16px",
-                borderTop: i > 0 ? "1px solid #f0f2f5" : "none",
-              }}>
-                <span style={{ fontSize: 14, width: 24, textAlign: "center", flexShrink: 0 }}>{row.icon}</span>
-                <span style={{ fontSize: 11, color: "#999", width: 56, flexShrink: 0 }}>{row.label}</span>
-                <span style={{ fontSize: 13, color: "#333", fontWeight: 600 }}>{row.value}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* 메모 · 준비물 */}
-        {hasNotes && (
-          <div style={{
-            background: "#f7f8fa", borderRadius: 12, padding: "14px 16px", marginBottom: 16,
-            border: "1px solid #e8eaed",
-          }}>
-            <div style={{ fontSize: 11, color: "#999", fontWeight: 700, marginBottom: 8 }}>📋 내용 · 준비물</div>
-            {task.prepItems.map((item, i) => (
-              <div key={i} style={{ fontSize: 13, color: "#555", lineHeight: 1.8, paddingLeft: 4 }}>· {item.text}</div>
-            ))}
-          </div>
-        )}
-
-        {/* 확인함 버튼 */}
-        <button
-          onClick={onConfirm}
-          style={{
-            width: "100%", padding: 14, borderRadius: 12, border: "none",
-            background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "#fff",
-            fontSize: 15, fontWeight: 800,
-            fontFamily: FONT_FAMILY, cursor: "pointer",
-            boxShadow: "0 4px 20px #0891b222",
-          }}
-        >
-          확인함
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
   const [tasks, setTasks] = usePersistedState("memchwo-tasks", createSampleTasks);
   const [visitHistory, setVisitHistory] = usePersistedState("memchwo-visit-history", DEFAULT_VISIT_HISTORY);
   const [media, setMedia] = usePersistedState("memchwo-media", DEFAULT_MEDIA);
-  const { activeAlarm, dismissAlarm, snoozeAlarm, triggerAlarm } = useAlarmScheduler(tasks);
+  const {
+    activeAlarm, alarmMode, getSnoozeCount,
+    dismissAlarm, snoozeAlarm, triggerAlarm,
+  } = useAlarmScheduler(tasks);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [nowTask, setNowTask] = useState(null);
+  // 태스크 카드 탭 → 바로 정보 카드 표시 (감각 전환 없이)
+  const [tappedTask, setTappedTask] = useState(null);
 
   // PWA 설치 프롬프트
   const [installPrompt, setInstallPrompt] = useState(null);
@@ -195,44 +77,55 @@ export default function App() {
         t.id === id ? { ...t, date: getDateStr(1), postponeCount: (t.postponeCount || 0) + 1 } : t
       )
     );
-    setNowTask(null);
   };
 
-  // 알람 트리거 → 감각전환(10초, 배경 유지) → 페이드아웃하며 모달 표시
-  const [sensoryActive, setSensoryActive] = useState(false);
-  const [sensoryFaded, setSensoryFaded] = useState(false);
+  // ─── 알람 핸들러 ───
 
-  useEffect(() => {
+  const handleAlarmDismiss = () => {
+    dismissAlarm();
+    releaseScreen();
+  };
+
+  const handleAlarmSnooze = () => {
+    snoozeAlarm();
+    releaseScreen();
+  };
+
+  const handleAlarmPostpone = () => {
     if (activeAlarm) {
-      setSensoryActive(true);
-      setSensoryFaded(false);
-      setNowTask(activeAlarm);
+      postponeTask(activeAlarm.id);
     }
-  }, [activeAlarm]);
+    dismissAlarm();
+    releaseScreen();
+  };
+
+  // 태스크 카드 탭 → 감각 전환 없이 바로 정보 표시
+  const handleTaskTap = (task) => {
+    setTappedTask(task);
+  };
+
+  const handleTappedDismiss = () => {
+    setTappedTask(null);
+  };
+
+  const handleTappedPostpone = () => {
+    if (tappedTask) {
+      postponeTask(tappedTask.id);
+    }
+    setTappedTask(null);
+  };
 
   // 감각전환 중 탭이 다시 보이면 풀스크린 재시도
   useEffect(() => {
-    if (!sensoryActive) return;
+    if (!activeAlarm) return;
     const onVisible = () => {
-      if (document.visibilityState === "visible" && sensoryActive) {
+      if (document.visibilityState === "visible" && activeAlarm) {
         takeoverScreen();
       }
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [sensoryActive]);
-
-  const handleSensoryFinish = () => {
-    setSensoryFaded(true);
-    dismissAlarm();
-  };
-
-  const handleNowDismiss = () => {
-    setNowTask(null);
-    setSensoryActive(false);
-    setSensoryFaded(false);
-    releaseScreen();
-  };
+  }, [activeAlarm]);
 
   // 오늘 / 내일 할 일
   const today = getDateStr(0);
@@ -252,10 +145,6 @@ export default function App() {
 
   const todayDone = todayTasks.filter((t) => t.completed).length;
   const tomorrowDone = tomorrowTasks.filter((t) => t.completed).length;
-
-  const alarmQueueCount = activeAlarm
-    ? tasks.filter((t) => t.date === today && !t.completed && t.id !== activeAlarm.id).length
-    : 0;
 
   return (
     <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "#f7f8fa", fontFamily: FONT_FAMILY, position: "relative" }}>
@@ -328,13 +217,13 @@ export default function App() {
           )}
         </div>
         {todayTasks.length > 0 ? (
-          todayTasks.map((task, i) => (
+          todayTasks.map((task) => (
             <TaskCard
               key={task.id}
               task={task}
               onDelete={deleteTask}
               onComplete={completeTask}
-              onTap={(t) => { setNowTask(t); setSensoryFaded(true); }}
+              onTap={handleTaskTap}
             />
           ))
         ) : (
@@ -357,13 +246,13 @@ export default function App() {
           )}
         </div>
         {tomorrowTasks.length > 0 ? (
-          tomorrowTasks.map((task, i) => (
+          tomorrowTasks.map((task) => (
             <TaskCard
               key={task.id}
               task={task}
               onDelete={deleteTask}
               onComplete={completeTask}
-              onTap={(t) => { setNowTask(t); setSensoryFaded(true); }}
+              onTap={handleTaskTap}
             />
           ))
         ) : (
@@ -374,28 +263,28 @@ export default function App() {
         )}
       </div>
 
-
-
-      {/* 감각 전환 배경 — 모달이 열려도 유지, 페이드아웃 */}
-      {sensoryActive && nowTask && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 840,
-          opacity: sensoryFaded ? 0.3 : 1,
-          transition: "opacity 0.8s ease",
-        }}>
-          <SensoryAlarm
-            task={nowTask}
-            media={media}
-            onFinish={handleSensoryFinish}
-          />
-        </div>
+      {/* 알람 트리거 → SensoryAlarm (5단계 통합) */}
+      {activeAlarm && (
+        <SensoryAlarm
+          task={activeAlarm}
+          media={media}
+          snoozeCount={getSnoozeCount(activeAlarm.id)}
+          onDismiss={handleAlarmDismiss}
+          onSnooze={handleAlarmSnooze}
+          onPostpone={handleAlarmPostpone}
+        />
       )}
 
-      {/* 상세 모달 — 감각 전환 위에 표시 */}
-      {nowTask && sensoryFaded && (
-        <NowTaskModal
-          task={nowTask}
-          onConfirm={handleNowDismiss}
+      {/* 태스크 카드 탭 → 감각 전환 없이 바로 정보 표시 */}
+      {tappedTask && !activeAlarm && (
+        <SensoryAlarm
+          task={tappedTask}
+          media={media}
+          snoozeCount={0}
+          skipSensory
+          onDismiss={handleTappedDismiss}
+          onSnooze={handleTappedDismiss}
+          onPostpone={handleTappedPostpone}
         />
       )}
 

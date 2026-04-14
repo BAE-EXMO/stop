@@ -1,22 +1,27 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 const AUDIO_STORAGE_KEY = "memchwo-audio";
+
+// 피아노 화음 주파수 (C4-E4-G4, 따뜻한 톤)
+const PIANO_FREQUENCIES = [261.63, 329.63, 392.0];
 
 /**
  * 감각 전환 알림용 오디오 훅.
  *
- * A. 사용자 지정 오디오 URL이 있으면 HTML5 Audio로 재생
- * B. 없으면 Web Audio API로 앰비언트 사운드 생성 (220Hz 사인파 + 호흡 변조)
+ * A. 사용자 지정 오디오 URL이 있으면 HTML5 Audio로 재생 (볼륨 페이드인/아웃)
+ * B. 없으면 Web Audio API로 피아노 화음 (C-E-G) 생성
  *
  * @param {boolean} shouldPlay - 재생 시작 여부
- * @returns {{ isPlaying, stop, analyserNode }}
+ * @returns {{ isPlaying, stop, fadeOut, analyserNode }}
  */
 export default function useSensoryAudio(shouldPlay) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef(null); // HTML5 Audio
-  const ctxRef = useRef(null);   // AudioContext
+  const audioRef = useRef(null);
+  const ctxRef = useRef(null);
+  const gainRef = useRef(null);
   const analyserRef = useRef(null);
   const cleanupRef = useRef(null);
+  const fadeTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (!shouldPlay) return;
@@ -24,84 +29,98 @@ export default function useSensoryAudio(shouldPlay) {
     const userAudioUrl = localStorage.getItem(AUDIO_STORAGE_KEY);
 
     if (userAudioUrl) {
-      // ─── Approach A: User-selected audio ───
+      // ─── Approach A: User-selected audio with fade-in ───
       const audio = new Audio(userAudioUrl);
       audio.loop = true;
-      audio.volume = 0.6;
+      audio.volume = 0;
       audioRef.current = audio;
 
       audio.play().then(() => {
         setIsPlaying(true);
+        // 볼륨 페이드인: 0 → 0.7 → 1.0 (1초)
+        const startTime = performance.now();
+        const fadeIn = () => {
+          const elapsed = performance.now() - startTime;
+          const progress = Math.min(elapsed / 1000, 1);
+          // 70% → 100% 구간
+          audio.volume = 0.7 + progress * 0.3;
+          if (progress < 1) {
+            fadeTimeoutRef.current = requestAnimationFrame(fadeIn);
+          }
+        };
+        // 즉시 70%로 점프 후 서서히 100%
+        audio.volume = 0.7;
+        fadeTimeoutRef.current = requestAnimationFrame(fadeIn);
       }).catch(() => {
         // 자동재생 차단 — 무시
       });
 
       cleanupRef.current = () => {
+        if (fadeTimeoutRef.current) cancelAnimationFrame(fadeTimeoutRef.current);
         audio.pause();
         audio.currentTime = 0;
         audioRef.current = null;
       };
     } else {
-      // ─── Approach B: Generated ambient sound (Web Audio API) ───
+      // ─── Approach B: Piano chord (C4-E4-G4) with Web Audio API ───
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         ctxRef.current = ctx;
 
-        // 기본 사인파 오실레이터 (220Hz)
-        const oscillator = ctx.createOscillator();
-        oscillator.type = "sine";
-        oscillator.frequency.value = 220;
-
-        // "호흡" 효과를 위한 LFO (Low Frequency Oscillator)
-        const lfo = ctx.createOscillator();
-        lfo.type = "sine";
-        lfo.frequency.value = 0.15; // 매우 느린 변조 (약 6.7초 주기)
-
-        const lfoGain = ctx.createGain();
-        lfoGain.gain.value = 0.15; // 변조 깊이
-
-        // 메인 볼륨
         const mainGain = ctx.createGain();
-        mainGain.gain.value = 0.08; // 낮은 볼륨 (배경 앰비언트)
+        mainGain.gain.setValueAtTime(0, ctx.currentTime);
+        // 볼륨 페이드인: 0 → 0.08 (1초)
+        mainGain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 1);
+        gainRef.current = mainGain;
 
-        // 분석 노드 (시각화 바 연동용)
         const analyser = ctx.createAnalyser();
         analyser.fftSize = 64;
         analyserRef.current = analyser;
 
-        // 연결: LFO → lfoGain → mainGain.gain (볼륨 변조)
-        lfo.connect(lfoGain);
-        lfoGain.connect(mainGain.gain);
-
-        // 연결: oscillator → mainGain → analyser → output
-        oscillator.connect(mainGain);
         mainGain.connect(analyser);
         analyser.connect(ctx.destination);
 
-        // 두 번째 약간 다른 주파수 (풍부한 사운드)
-        const osc2 = ctx.createOscillator();
-        osc2.type = "sine";
-        osc2.frequency.value = 330; // 5도 위
-        const gain2 = ctx.createGain();
-        gain2.gain.value = 0.04;
-        osc2.connect(gain2);
-        gain2.connect(analyser);
+        const oscillators = [];
 
-        oscillator.start();
+        // 피아노 화음 생성 (C4, E4, G4)
+        for (const freq of PIANO_FREQUENCIES) {
+          const osc = ctx.createOscillator();
+          osc.type = "sine";
+          osc.frequency.value = freq;
+
+          const oscGain = ctx.createGain();
+          oscGain.gain.value = 0.4; // 각 오실레이터 볼륨 균등 분배
+
+          osc.connect(oscGain);
+          oscGain.connect(mainGain);
+          osc.start();
+          oscillators.push(osc);
+        }
+
+        // "호흡" 효과를 위한 LFO
+        const lfo = ctx.createOscillator();
+        lfo.type = "sine";
+        lfo.frequency.value = 0.15;
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.value = 0.02;
+        lfo.connect(lfoGain);
+        lfoGain.connect(mainGain.gain);
         lfo.start();
-        osc2.start();
+
         setIsPlaying(true);
 
         cleanupRef.current = () => {
-          oscillator.stop();
-          lfo.stop();
-          osc2.stop();
+          for (const osc of oscillators) {
+            try { osc.stop(); } catch { /* already stopped */ }
+          }
+          try { lfo.stop(); } catch { /* already stopped */ }
           ctx.close();
           ctxRef.current = null;
+          gainRef.current = null;
           analyserRef.current = null;
         };
       } catch {
-        // Web Audio API 사용 불가 — 무시
+        // Web Audio API 사용 불가
       }
     }
 
@@ -114,13 +133,52 @@ export default function useSensoryAudio(shouldPlay) {
     };
   }, [shouldPlay]);
 
-  const stop = () => {
+  /**
+   * 볼륨을 duration(ms) 동안 0으로 페이드아웃한 뒤 정지.
+   */
+  const fadeOut = useCallback((duration = 1000) => {
+    if (audioRef.current) {
+      const audio = audioRef.current;
+      const startVol = audio.volume;
+      const startTime = performance.now();
+      const fade = () => {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        audio.volume = startVol * (1 - progress);
+        if (progress < 1) {
+          fadeTimeoutRef.current = requestAnimationFrame(fade);
+        } else {
+          audio.pause();
+          audio.currentTime = 0;
+          audioRef.current = null;
+          setIsPlaying(false);
+        }
+      };
+      fadeTimeoutRef.current = requestAnimationFrame(fade);
+    } else if (ctxRef.current && gainRef.current) {
+      const ctx = ctxRef.current;
+      const gain = gainRef.current;
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration / 1000);
+      setTimeout(() => {
+        if (cleanupRef.current) {
+          cleanupRef.current();
+          cleanupRef.current = null;
+        }
+        setIsPlaying(false);
+      }, duration);
+    } else {
+      setIsPlaying(false);
+    }
+  }, []);
+
+  const stop = useCallback(() => {
+    if (fadeTimeoutRef.current) cancelAnimationFrame(fadeTimeoutRef.current);
     if (cleanupRef.current) {
       cleanupRef.current();
       cleanupRef.current = null;
     }
     setIsPlaying(false);
-  };
+  }, []);
 
-  return { isPlaying, stop, analyserNode: analyserRef.current };
+  return { isPlaying, stop, fadeOut, analyserNode: analyserRef.current };
 }
