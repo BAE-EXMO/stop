@@ -16,12 +16,18 @@ function parseNote(noteText) {
 }
 
 export default function useAddTaskForm({ initDate, onAdd }) {
+  // 입력 시점 기준 오전/오후, 오늘/내일 자동 판별
+  const now = new Date();
+  const currentHour = now.getHours();
+  const defaultAmpm = currentHour < 12 ? "am" : "pm";
+  const defaultDate = initDate || getDateStr(0);
+
   const [noteText, setNoteText] = useState("");
-  const [date, setDate] = useState(initDate || getDateStr(0));
+  const [date, setDate] = useState(defaultDate);
   const [hasTime, setHasTime] = useState(false);
   const [timeMode, setTimeMode] = useState("ampm"); // "ampm" | "exact"
-  const [ampm, setAmpm] = useState(""); // "am" | "pm" | ""
-  const [time, setTime] = useState("12:00");
+  const [ampm, setAmpm] = useState(defaultAmpm);
+  const [time, setTime] = useState(currentHour < 12 ? "09:00" : "14:00");
   const [location, setLocation] = useState("");
   const [deadline, setDeadline] = useState("");
   const [duration, setDuration] = useState("");
