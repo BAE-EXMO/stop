@@ -653,6 +653,154 @@
   cursor: pointer;
 }
 
+/* ── Visit history match hint ── */
+.matchHint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #7048E808;
+  border: 1px solid #7048E822;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #7048E8;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+}
+
+.matchHintIcon {
+  font-size: 14px;
+}
+
+/* ── Visit history card ── */
+.visitCard {
+  border-radius: 14px;
+  border: 1px solid #7048E833;
+  background: #7048E808;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.visitCardHeader {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7048E8;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 10px;
+}
+
+.visitCardItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #7048E833;
+  background: var(--card-bg, #fff);
+  margin-bottom: 8px;
+}
+
+.visitCardItem:last-child {
+  margin-bottom: 0;
+}
+
+.visitCardItemSelected {
+  border-color: #2B8A3E;
+  background: #2B8A3E08;
+}
+
+.visitCardInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.visitCardName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary, #1a1a2e);
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 2px;
+}
+
+.visitCardAddr {
+  font-size: 11px;
+  color: var(--text-secondary, #888);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.visitCardMeta {
+  font-size: 10px;
+  color: #7048E8;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-top: 4px;
+}
+
+.visitCardBtn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #7048E844;
+  background: #7048E811;
+  color: #7048E8;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Recurring ── */
+.recurringDetail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.recurringLabel {
+  font-size: 13px;
+  color: var(--text-secondary, #888);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.recurringInput {
+  width: 60px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #e8eaed);
+  background: var(--input-bg, #f7f8fa);
+  color: var(--text-primary, #333);
+  font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  text-align: center;
+  outline: none;
+}
+
+.dayBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border, #e8eaed);
+  background: transparent;
+  color: var(--text-secondary, #888);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayBtnActive {
+  border-color: #0891b2;
+  background: #0891b218;
+  color: #0891b2;
+  font-weight: 800;
+}
+
 /* ── Animations ── */
 @keyframes pulse {
   0%, 100% { opacity: 1; }

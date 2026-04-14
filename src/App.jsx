@@ -340,7 +340,7 @@ export default function App() {
       )}
 
       {showAddModal && (
-        <AddTaskModal initDate={selDate} onAdd={addTask} onClose={() => setShowAddModal(false)} />
+        <AddTaskModal initDate={selDate} onAdd={addTask} onClose={() => setShowAddModal(false)} visitHistory={visitHistory} />
       )}
       {showSettings && (
         <SettingsScreen

@@ -64,6 +64,18 @@ export const SMART_DB = [
   { keywords: ["카페", "커피"], search: "카페", category: "social", prep: ["노트북 충전기", "이어폰"], placeName: "카페" },
   { keywords: ["마트", "장보기"], search: "마트", category: "errand", prep: ["장바구니", "살 것 목록"], placeName: "마트" },
   { keywords: ["미용실", "헤어", "머리"], search: "미용실", category: "errand", prep: ["스타일 사진", "예약시간 확인"], placeName: "미용실" },
+  { keywords: ["치과", "스케일링", "충치"], search: "치과", category: "health", prep: ["보험증", "예약시간 확인"], placeName: "치과" },
+  { keywords: ["병원", "진료", "진찰"], search: "병원", category: "health", prep: ["보험증", "의뢰서"], placeName: "병원" },
+  { keywords: ["약국", "약"], search: "약국", category: "health", prep: ["처방전"], placeName: "약국" },
+  { keywords: ["우체국", "택배", "등기우편"], search: "우체국", category: "errand", prep: ["보낼 물건", "받는 사람 주소"], placeName: "우체국" },
+  { keywords: ["도서관", "책"], search: "도서관", category: "study", prep: ["반납할 책", "대출증"], placeName: "도서관" },
+  { keywords: ["세탁", "세탁소", "드라이"], search: "세탁소", category: "errand", prep: ["세탁물"], placeName: "세탁소" },
+  { keywords: ["세차", "세차장"], search: "세차장", category: "errand", prep: ["차량 정리"], placeName: "세차장" },
+  { keywords: ["수영", "수영장"], search: "수영장", category: "health", prep: ["수영복", "수모", "수경", "수건"], placeName: "수영장" },
+  { keywords: ["필라테스", "요가"], search: "필라테스", category: "health", prep: ["운동복", "수건", "물"], placeName: "필라테스" },
+  { keywords: ["여권", "패스포트"], search: "구청", category: "errand", prep: ["신분증", "여권사진 2매", "수수료(53,000원)"], placeName: "구청" },
+  { keywords: ["등본", "초본", "주민등록"], search: "주민센터", category: "errand", prep: ["신분증"], placeName: "주민센터" },
+  { keywords: ["면허", "운전면허"], search: "면허시험장", category: "errand", prep: ["신분증", "사진", "수수료"], placeName: "면허시험장" },
 ];
 
 export const SIMILAR_PLACES = {
