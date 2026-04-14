@@ -181,3 +181,115 @@
   font-family: 'Inter', 'Noto Sans KR', sans-serif;
   line-height: 1.6;
 }
+
+/* ── Pet Section ── */
+.petCard {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border, #e8eaed);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.petCardTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.petAvatar {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.petInfo {
+  flex: 1;
+}
+
+.petName {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary, #1a1a2e);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.petNameEditBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted, #bbb);
+  font-size: 11px;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.petNameSaveBtn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #2B8A3E;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+}
+
+.petStats {
+  font-size: 12px;
+  color: var(--text-secondary, #888);
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-top: 4px;
+}
+
+.petHpRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.petHpLabel {
+  font-size: 11px;
+  color: var(--text-secondary, #888);
+  font-family: 'Noto Sans KR', sans-serif;
+  width: 30px;
+}
+
+.petHpBar {
+  flex: 1;
+  height: 8px;
+  background: var(--border, #e8eaed);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.petHpFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.petHpValue {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  width: 35px;
+  text-align: right;
+}
+
+.petTypeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.petTypeBtn {
+  padding: 14px 8px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border, #e8eaed);
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: border-color 0.15s, background 0.15s;
+}

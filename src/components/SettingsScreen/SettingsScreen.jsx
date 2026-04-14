@@ -1,6 +1,7 @@
 import { useState } from "react";
 import sharedStyles from "../../styles/shared.module.css";
 import styles from "./SettingsScreen.module.css";
+import { PET_TYPES, getPetMood, getPetStage } from "../../utils/petSystem";
 
 const AUDIO_STORAGE_KEY = "memchwo-audio";
 
@@ -14,10 +15,17 @@ function getTypeLabel(type) {
   return MEDIA_TYPES.find((t) => t.key === type)?.label || type;
 }
 
-export default function SettingsScreen({ media, setMedia, onClose }) {
+export default function SettingsScreen({ media, setMedia, pet, setPet, petType, setPetType, onClose }) {
   const [newUrl, setNewUrl] = useState("");
   const [newType, setNewType] = useState("photo");
   const [audioUrl, setAudioUrl] = useState(() => localStorage.getItem(AUDIO_STORAGE_KEY) || "");
+  const [editingPetName, setEditingPetName] = useState(false);
+  const [petNameInput, setPetNameInput] = useState(pet?.name || "");
+
+  const savePetName = () => {
+    if (setPet) setPet((p) => ({ ...p, name: petNameInput.trim() || p.name }));
+    setEditingPetName(false);
+  };
 
   const saveAudioUrl = (url) => {
     setAudioUrl(url);
@@ -60,8 +68,82 @@ export default function SettingsScreen({ media, setMedia, onClose }) {
           </div>
         </div>
 
+        {/* Pet Section */}
+        {pet && (
+          <>
+            <div className={styles.sectionTitle}>🐾 내 반려동물</div>
+            <div className={styles.petCard}>
+              <div className={styles.petCardTop}>
+                <div className={styles.petAvatar}>
+                  {PET_TYPES[petType]?.stages[getPetStage(pet.xp)]}
+                </div>
+                <div className={styles.petInfo}>
+                  {editingPetName ? (
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <input
+                        value={petNameInput}
+                        onChange={(e) => setPetNameInput(e.target.value)}
+                        className={sharedStyles.inputField}
+                        style={{ flex: 1, fontSize: 14 }}
+                      />
+                      <button onClick={savePetName} className={styles.petNameSaveBtn}>저장</button>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span className={styles.petName}>{pet.name}</span>
+                      <button onClick={() => setEditingPetName(true)} className={styles.petNameEditBtn}>이름 변경</button>
+                    </div>
+                  )}
+                  <div className={styles.petStats}>
+                    완수 {pet.completions}회 · 경험치 {pet.xp} · {getPetMood(pet.hp).label}
+                  </div>
+                </div>
+              </div>
+              <div className={styles.petHpRow}>
+                <span className={styles.petHpLabel}>체력</span>
+                <div className={styles.petHpBar}>
+                  <div className={styles.petHpFill} style={{ width: `${pet.hp}%`, background: getPetMood(pet.hp).color }} />
+                </div>
+                <span className={styles.petHpValue} style={{ color: getPetMood(pet.hp).color }}>{pet.hp}</span>
+              </div>
+            </div>
+
+            <div className={styles.sectionHint} style={{ marginTop: 12 }}>반려동물 종류 변경</div>
+            <div className={styles.petTypeGrid}>
+              {Object.entries(PET_TYPES).map(([k, v]) => (
+                <button
+                  key={k}
+                  className={styles.petTypeBtn}
+                  style={{
+                    borderColor: petType === k ? "#0891b2" : "var(--border)",
+                    background: petType === k ? "#0891b215" : "transparent",
+                  }}
+                  onClick={() => setPetType(k)}
+                >
+                  <div style={{ fontSize: 28, marginBottom: 4 }}>{v.emoji}</div>
+                  <div style={{
+                    fontSize: 12, fontWeight: petType === k ? 800 : 500,
+                    color: petType === k ? "#0891b2" : "var(--text-secondary)",
+                  }}>{v.name}</div>
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.explainBox} style={{ marginTop: 16 }}>
+              <div className={styles.explainTitle}>🐾 반려동물 시스템</div>
+              <div className={styles.explainText}>
+                할 일을 완수하면 반려동물에게 먹이를 줄 수 있어요. 미루면 반려동물이 힘들어집니다.<br/>
+                • 완수 → 체력 +10~+20 (미루지 않으면 보너스!)<br/>
+                • 미루기 → 체력 -8<br/>
+                • 3번 미뤘지만 결국 완수 → 체력 +25 (역전승!)<br/>
+                • 5일 연속 완수 → 체력 +30 + 진화!
+              </div>
+            </div>
+          </>
+        )}
+
         {/* Media list */}
-        <div className={styles.sectionTitle}>🎞️ 미디어</div>
+        <div className={styles.sectionTitle} style={{ marginTop: 24 }}>🎞️ 미디어</div>
         <div className={styles.sectionHint}>
           알림 시 랜덤으로 하나가 표시됩니다. 사진, 동영상, 릴스를 자유롭게 추가하세요.
         </div>

@@ -341,3 +341,473 @@
   pointer-events: none;
 }
 
+/* ── Mode tabs ── */
+.modeTabs {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.modeTab {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #e8eaed);
+  background: transparent;
+  color: var(--text-muted, #999);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+}
+
+.modeTabActive {
+  border-color: #0891b2;
+  background: #0891b218;
+  color: #0891b2;
+}
+
+/* ── NL buttons ── */
+.nlBtns {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.voiceBtn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border, #e8eaed);
+  background: var(--card-bg, #fff);
+  color: var(--text-secondary, #aaa);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.voiceBtnActive {
+  border-color: #E03131;
+  background: #E0313118;
+  color: #E03131;
+}
+
+.recordDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #E03131;
+  animation: pulse 1s infinite;
+}
+
+.analyzeBtn {
+  flex: 2;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: 'Noto Sans KR', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top: 2px solid #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Error / Help boxes ── */
+.errorBox {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #E0313112;
+  border: 1px solid #E0313133;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #E03131;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.helpBox {
+  background: var(--input-bg, #f7f8fa);
+  border-radius: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border, #e8eaed);
+}
+
+.helpTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary, #888);
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 8px;
+}
+
+.helpText {
+  font-size: 12px;
+  color: var(--text-muted, #aaa);
+  font-family: 'Noto Sans KR', sans-serif;
+  line-height: 1.7;
+}
+
+/* ── AI result preview ── */
+.aiSuccessBox {
+  background: #2B8A3E11;
+  border: 1px solid #2B8A3E33;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  animation: fadeIn 0.3s ease;
+}
+
+.aiSuccessTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2B8A3E;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 4px;
+}
+
+.aiSuccessHint {
+  font-size: 12px;
+  color: var(--text-secondary, #888);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* ── Prep guide ── */
+.prepGuideBox {
+  margin-bottom: 16px;
+  border-radius: 14px;
+  background: #7048E808;
+  border: 1px solid #7048E833;
+  padding: 14px 16px;
+}
+
+.prepGuideTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7048E8;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 10px;
+}
+
+.prepGuideItem {
+  padding: 10px 12px;
+  background: var(--card-bg, #fff);
+  border-radius: 10px;
+  border: 1px solid var(--border, #e8eaed);
+  margin-bottom: 8px;
+}
+
+.prepGuideItem:last-child {
+  margin-bottom: 0;
+}
+
+.prepGuideItemTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary, #333);
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 4px;
+}
+
+.prepGuideDetail {
+  font-size: 12px;
+  color: var(--text-secondary, #888);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.prepGuideWhen {
+  font-size: 11px;
+  color: var(--text-muted, #aaa);
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-top: 2px;
+}
+
+/* ── Field groups (AI result) ── */
+.fieldGroup {
+  margin-bottom: 12px;
+}
+
+.label {
+  font-size: 11px;
+  color: var(--text-secondary, #888);
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border, #e8eaed);
+  background: var(--input-bg, #f7f8fa);
+  color: var(--text-primary, #333);
+  font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.fieldInputDate {
+  composes: fieldInput;
+  color-scheme: light;
+}
+
+.fieldInputInline {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-primary, #333);
+  font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  outline: none;
+  padding: 0;
+}
+
+.fieldRow2 {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.fieldHalf {
+  flex: 1;
+}
+
+/* ── Category row ── */
+.catRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.catBtn {
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1.5px solid;
+  font-size: 12px;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  font-weight: 400;
+  background: transparent;
+}
+
+.catBtnActive {
+  font-weight: 700;
+}
+
+/* ── Action buttons ── */
+.actionRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.resetBtn {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border, #e8eaed);
+  background: transparent;
+  color: var(--text-secondary, #888);
+  font-size: 13px;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border, #e8eaed);
+  background: transparent;
+  color: var(--text-secondary, #888);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+}
+
+.submitBtn {
+  flex: 2;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+}
+
+/* ── Visit history match hint ── */
+.matchHint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #7048E808;
+  border: 1px solid #7048E822;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #7048E8;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+}
+
+.matchHintIcon {
+  font-size: 14px;
+}
+
+/* ── Visit history card ── */
+.visitCard {
+  border-radius: 14px;
+  border: 1px solid #7048E833;
+  background: #7048E808;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.visitCardHeader {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7048E8;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 10px;
+}
+
+.visitCardItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #7048E833;
+  background: var(--card-bg, #fff);
+  margin-bottom: 8px;
+}
+
+.visitCardItem:last-child {
+  margin-bottom: 0;
+}
+
+.visitCardItemSelected {
+  border-color: #2B8A3E;
+  background: #2B8A3E08;
+}
+
+.visitCardInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.visitCardName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary, #1a1a2e);
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-bottom: 2px;
+}
+
+.visitCardAddr {
+  font-size: 11px;
+  color: var(--text-secondary, #888);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.visitCardMeta {
+  font-size: 10px;
+  color: #7048E8;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  margin-top: 4px;
+}
+
+.visitCardBtn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #7048E844;
+  background: #7048E811;
+  color: #7048E8;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Recurring ── */
+.recurringDetail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.recurringLabel {
+  font-size: 13px;
+  color: var(--text-secondary, #888);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.recurringInput {
+  width: 60px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #e8eaed);
+  background: var(--input-bg, #f7f8fa);
+  color: var(--text-primary, #333);
+  font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  text-align: center;
+  outline: none;
+}
+
+.dayBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border, #e8eaed);
+  background: transparent;
+  color: var(--text-secondary, #888);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayBtnActive {
+  border-color: #0891b2;
+  background: #0891b218;
+  color: #0891b2;
+  font-weight: 800;
+}
+
+/* ── Animations ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+

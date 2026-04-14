@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { CATEGORIES } from "./constants/categories";
 import { FONT_FAMILY } from "./constants/fonts";
-import { getDateStr } from "./utils/dateUtils";
-import { calcPriority } from "./utils/priorityUtils";
+import { getDateStr, getDateLabel } from "./utils/dateUtils";
+import { calcPriority, getPriorityLabel, getDeadlineInfo } from "./utils/priorityUtils";
 import { createSampleTasks } from "./data/sampleTasks";
 import { DEFAULT_VISIT_HISTORY } from "./data/visitHistory";
 import { DEFAULT_MEDIA } from "./data/defaultPhotos";
@@ -10,154 +10,42 @@ import usePersistedState from "./hooks/usePersistedState";
 import useAlarmScheduler from "./hooks/useAlarmScheduler";
 import { recordVisit } from "./utils/visitHistoryManager";
 import { recordTaskAction } from "./utils/behaviorTracker";
+import { DEFAULT_PET, calcReward, POSTPONE_PENALTY } from "./utils/petSystem";
 
 import SensoryAlarm from "./components/SensoryAlarm/SensoryAlarm";
 import SettingsScreen from "./components/SettingsScreen/SettingsScreen";
 import AddTaskModal from "./components/AddTaskModal/AddTaskModal";
 import TaskCard from "./components/TaskCard/TaskCard";
+import PetWidget from "./components/PetWidget/PetWidget";
+import { PetFeedOverlay, PetSadOverlay } from "./components/PetOverlay/PetOverlay";
 
 import { takeoverScreen, releaseScreen } from "./utils/screenTakeover";
 import "./styles/global.css";
-
-/**
- * 지금 해야 할 일 모달
- */
-function NowTaskModal({ task, onConfirm }) {
-  const categoryInfo = CATEGORIES[task.category];
-  const hasNotes = task.prepItems && task.prepItems.length > 0;
-  const hasDeadline = !!task.deadline;
-  const hasPostpone = task.postponeCount > 0;
-
-  const infoRows = [
-    task.time && { icon: "⏰", label: "시간", value: `${task.time}까지` },
-    task.location !== "미정" && { icon: "📍", label: "장소", value: task.location },
-    task.duration && { icon: "⏱️", label: "소요시간", value: task.duration },
-    task.contact && { icon: "📞", label: "연락처", value: task.contact },
-    task.attendees && { icon: "👥", label: "참석자", value: task.attendees },
-    task.manager && { icon: "👤", label: "담당자", value: task.manager },
-  ].filter(Boolean);
-
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 850, display: "flex", alignItems: "flex-start", justifyContent: "flex-end",
-      background: "rgba(0,0,0,0.15)",
-      backdropFilter: "blur(8px)",
-      padding: "16px",
-    }}>
-      <div style={{
-        width: "100%", maxWidth: 340, borderRadius: 18,
-        background: "#fff", border: "1px solid #e8eaed", padding: "24px 20px",
-        fontFamily: FONT_FAMILY, maxHeight: "80vh", overflowY: "auto",
-        boxShadow: "0 8px 40px rgba(0,0,0,0.1)",
-        animation: "slideInRight 0.3s ease-out",
-      }}>
-        {/* 슬로건 */}
-        <div style={{
-          textAlign: "center", marginBottom: 16, padding: "12px 0",
-          borderBottom: "2px solid #1a1a2e",
-        }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: "#0891b2", letterSpacing: 3, lineHeight: 1 }}>
-            STOP & DO IT
-          </div>
-        </div>
-
-        {/* 헤더 */}
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <div style={{ fontSize: 36, marginBottom: 8 }}>{categoryInfo.icon}</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: "#1a1a2e" }}>{task.title}</div>
-        </div>
-
-        {/* 상태 뱃지 */}
-        {(hasDeadline || hasPostpone) && (
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 16, flexWrap: "wrap" }}>
-            {hasDeadline && (
-              <span style={{
-                fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 6,
-                background: "#0891b210", color: "#0891b2", border: "1px solid #0891b233",
-              }}>
-                📅 마감 {task.deadline}
-              </span>
-            )}
-            {hasPostpone && (
-              <span style={{
-                fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 6,
-                background: task.postponeCount >= 3 ? "#ef444410" : "#f59e0b10",
-                color: task.postponeCount >= 3 ? "#ef4444" : "#e67700",
-                border: `1px solid ${task.postponeCount >= 3 ? "#ef444433" : "#e6770033"}`,
-              }}>
-                {task.postponeCount >= 3 ? "😤" : "⏰"} {task.postponeCount}번 미룸
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* 정보 행 */}
-        {infoRows.length > 0 && (
-          <div style={{
-            background: "#f7f8fa", borderRadius: 12, border: "1px solid #e8eaed",
-            padding: "4px 0", marginBottom: 12,
-          }}>
-            {infoRows.map((row, i) => (
-              <div key={i} style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "10px 16px",
-                borderTop: i > 0 ? "1px solid #f0f2f5" : "none",
-              }}>
-                <span style={{ fontSize: 14, width: 24, textAlign: "center", flexShrink: 0 }}>{row.icon}</span>
-                <span style={{ fontSize: 11, color: "#999", width: 56, flexShrink: 0 }}>{row.label}</span>
-                <span style={{ fontSize: 13, color: "#333", fontWeight: 600 }}>{row.value}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* 메모 · 준비물 */}
-        {hasNotes && (
-          <div style={{
-            background: "#f7f8fa", borderRadius: 12, padding: "14px 16px", marginBottom: 16,
-            border: "1px solid #e8eaed",
-          }}>
-            <div style={{ fontSize: 11, color: "#999", fontWeight: 700, marginBottom: 8 }}>📋 내용 · 준비물</div>
-            {task.prepItems.map((item, i) => (
-              <div key={i} style={{ fontSize: 13, color: "#555", lineHeight: 1.8, paddingLeft: 4 }}>· {item.text}</div>
-            ))}
-          </div>
-        )}
-
-        {/* 확인함 버튼 */}
-        <button
-          onClick={onConfirm}
-          style={{
-            width: "100%", padding: 14, borderRadius: 12, border: "none",
-            background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "#fff",
-            fontSize: 15, fontWeight: 800,
-            fontFamily: FONT_FAMILY, cursor: "pointer",
-            boxShadow: "0 4px 20px #0891b222",
-          }}
-        >
-          확인함
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export default function App() {
   const [tasks, setTasks] = usePersistedState("memchwo-tasks", createSampleTasks);
   const [visitHistory, setVisitHistory] = usePersistedState("memchwo-visit-history", DEFAULT_VISIT_HISTORY);
   const [media, setMedia] = usePersistedState("memchwo-media", DEFAULT_MEDIA);
-  const { activeAlarm, dismissAlarm, snoozeAlarm, triggerAlarm } = useAlarmScheduler(tasks);
+  const {
+    activeAlarm, alarmMode, getSnoozeCount,
+    dismissAlarm, snoozeAlarm, triggerAlarm,
+  } = useAlarmScheduler(tasks);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [nowTask, setNowTask] = useState(null);
+  const [tappedTask, setTappedTask] = useState(null);
+  const [selDate, setSelDate] = useState(getDateStr(0));
+
+  // Pet 시스템
+  const [pet, setPet] = usePersistedState("memchwo-pet", DEFAULT_PET);
+  const [petType, setPetType] = usePersistedState("memchwo-pet-type", "dog");
+  const [feedOverlay, setFeedOverlay] = useState(null);
+  const [sadOverlay, setSadOverlay] = useState(null);
 
   // PWA 설치 프롬프트
   const [installPrompt, setInstallPrompt] = useState(null);
 
   useEffect(() => {
-    const handler = (e) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
@@ -170,14 +58,8 @@ export default function App() {
   };
 
   // Task CRUD
-  const addTask = (task) => {
-    setTasks((prev) => [...prev, task]);
-    setShowAddModal(false);
-  };
-
-  const deleteTask = (id) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  };
+  const addTask = useCallback((task) => { setTasks((prev) => [...prev, task]); setShowAddModal(false); }, [setTasks]);
+  const deleteTask = useCallback((id) => setTasks((prev) => prev.filter((t) => t.id !== id)), [setTasks]);
 
   const completeTask = (id) => {
     const task = tasks.find((t) => t.id === id);
@@ -185,6 +67,17 @@ export default function App() {
     setVisitHistory((hist) => recordVisit(hist, task.location, task));
     recordTaskAction(task.category, "completed");
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, completed: true } : t)));
+
+    // Pet 보상
+    const { gained, reason } = calcReward(task, pet.streak);
+    setPet((p) => ({
+      ...p,
+      hp: Math.min(100, p.hp + gained),
+      xp: p.xp + gained,
+      completions: p.completions + 1,
+      streak: p.streak + 1,
+    }));
+    setFeedOverlay({ gained, reason });
   };
 
   const postponeTask = (id) => {
@@ -195,223 +88,275 @@ export default function App() {
         t.id === id ? { ...t, date: getDateStr(1), postponeCount: (t.postponeCount || 0) + 1 } : t
       )
     );
-    setNowTask(null);
+
+    // Pet 벌칙
+    setPet((p) => ({ ...p, hp: Math.max(0, p.hp - POSTPONE_PENALTY), streak: 0 }));
+    setSadOverlay({ lost: POSTPONE_PENALTY });
   };
 
-  // 알람 트리거 → 감각전환(10초, 배경 유지) → 페이드아웃하며 모달 표시
-  const [sensoryActive, setSensoryActive] = useState(false);
-  const [sensoryFaded, setSensoryFaded] = useState(false);
+  // ─── 알람 핸들러 ───
+  const handleAlarmDismiss = () => { dismissAlarm(); releaseScreen(); };
+  const handleAlarmSnooze = () => { snoozeAlarm(); releaseScreen(); };
+  const handleAlarmPostpone = () => {
+    if (activeAlarm) postponeTask(activeAlarm.id);
+    dismissAlarm(); releaseScreen();
+  };
 
-  useEffect(() => {
-    if (activeAlarm) {
-      setSensoryActive(true);
-      setSensoryFaded(false);
-      setNowTask(activeAlarm);
-    }
-  }, [activeAlarm]);
+  const handleTaskTap = (task) => setTappedTask(task);
+  const handleTappedDismiss = () => setTappedTask(null);
+  const handleTappedPostpone = () => {
+    if (tappedTask) postponeTask(tappedTask.id);
+    setTappedTask(null);
+  };
 
-  // 감각전환 중 탭이 다시 보이면 풀스크린 재시도
+  // 감각전환 중 탭 visibility
   useEffect(() => {
-    if (!sensoryActive) return;
+    if (!activeAlarm) return;
     const onVisible = () => {
-      if (document.visibilityState === "visible" && sensoryActive) {
-        takeoverScreen();
-      }
+      if (document.visibilityState === "visible" && activeAlarm) takeoverScreen();
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [sensoryActive]);
+  }, [activeAlarm]);
 
-  const handleSensoryFinish = () => {
-    setSensoryFaded(true);
-    dismissAlarm();
-  };
+  // ─── 날짜 탭 ───
+  const allDates = useMemo(() =>
+    [...new Set([getDateStr(0), getDateStr(1), ...tasks.map((t) => t.date)])]
+      .filter((d) => d >= getDateStr(0))
+      .sort(),
+    [tasks]
+  );
 
-  const handleNowDismiss = () => {
-    setNowTask(null);
-    setSensoryActive(false);
-    setSensoryFaded(false);
-    releaseScreen();
-  };
-
-  // 오늘 / 내일 할 일
-  const today = getDateStr(0);
-  const tomorrow = getDateStr(1);
-
-  const buildList = (dateStr) =>
+  // 선택된 날짜의 태스크 (우선순위+마감 부스트 정렬)
+  const filtered = useMemo(() =>
     tasks
-      .filter((t) => t.date === dateStr)
-      .map((t) => ({ ...t, _priority: calcPriority(t) }))
+      .filter((t) => t.date === selDate)
+      .map((t) => {
+        const p = calcPriority(t);
+        const dl = getDeadlineInfo(t);
+        let bonus = 0;
+        if (dl) {
+          if (dl.urgency >= 3) bonus = 40;
+          else if (dl.urgency >= 2) bonus = 25;
+          else if (dl.urgency >= 1) bonus = 10;
+        }
+        if ((t.postponeCount || 0) >= 3) bonus += 15;
+        else if ((t.postponeCount || 0) >= 2) bonus += 8;
+        return { ...t, _pri: { ...p, score: Math.min(100, p.score + bonus) } };
+      })
       .sort((a, b) => {
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
-        return b._priority.score - a._priority.score;
-      });
+        return b._pri.score - a._pri.score;
+      }),
+    [tasks, selDate]
+  );
 
-  const todayTasks = buildList(today);
-  const tomorrowTasks = buildList(tomorrow);
+  const doneCount = filtered.filter((t) => t.completed).length;
+  const hasAISort = filtered.length > 1 && filtered.some((t) => !t.time);
 
-  const todayDone = todayTasks.filter((t) => t.completed).length;
-  const tomorrowDone = tomorrowTasks.filter((t) => t.completed).length;
-
-  const alarmQueueCount = activeAlarm
-    ? tasks.filter((t) => t.date === today && !t.completed && t.id !== activeAlarm.id).length
-    : 0;
+  // "가장 먼저" — 모든 미래 태스크 중 가장 긴급한 것
+  const nextTask = useMemo(() =>
+    [...tasks]
+      .filter((t) => !t.completed && t.date >= getDateStr(0))
+      .map((t) => ({ ...t, _pri: calcPriority(t) }))
+      .sort((a, b) => a.date === b.date ? b._pri.score - a._pri.score : a.date.localeCompare(b.date))
+      [0] || null,
+    [tasks]
+  );
 
   return (
-    <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "#f7f8fa", fontFamily: FONT_FAMILY, position: "relative" }}>
+    <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "var(--bg-primary)", fontFamily: FONT_FAMILY, position: "relative", paddingBottom: 100 }}>
       {/* App header */}
       <div style={{ padding: "24px 24px 8px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <div style={{ fontSize: 26, fontWeight: 900, color: "#1a1a2e", lineHeight: 1.2, letterSpacing: -0.5 }}>STOP.</div>
-          <div style={{ fontSize: 12, color: "#999", marginTop: 4, letterSpacing: 1 }}>DO IT NOW</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: "var(--text-primary)", lineHeight: 1.2, letterSpacing: -0.5 }}>STOP.</div>
+          <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, letterSpacing: 1 }}>DO IT NOW</div>
         </div>
         <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
           {installPrompt && (
-            <button
-              onClick={handleInstall}
-              style={{
-                background: "linear-gradient(135deg, #0891b2, #0e7490)", border: "none", borderRadius: 10,
-                padding: "8px 14px", color: "#fff", fontSize: 12, fontWeight: 700,
-                fontFamily: FONT_FAMILY, cursor: "pointer",
-                boxShadow: "0 2px 12px #0891b233",
-              }}
-            >
-              📲 설치
-            </button>
+            <button onClick={handleInstall} style={{
+              background: "linear-gradient(135deg, #0891b2, #0e7490)", border: "none", borderRadius: 10,
+              padding: "8px 14px", color: "#fff", fontSize: 12, fontWeight: 700,
+              fontFamily: FONT_FAMILY, cursor: "pointer", boxShadow: "0 2px 12px #0891b233",
+            }}>📲 설치</button>
           )}
-          <button
-            onClick={() => setShowSettings(true)}
-            style={{
-              background: "#fff", border: "1px solid #e8eaed", borderRadius: 10,
-              padding: "8px 14px", color: "#666", fontSize: 12, fontWeight: 600,
-              fontFamily: FONT_FAMILY, cursor: "pointer",
-              transition: "border-color 0.2s",
-            }}
-          >
-            ⚙️ 설정
-          </button>
+          <button onClick={() => setShowSettings(true)} style={{
+            background: "var(--card-bg)", border: "1px solid var(--border)", borderRadius: 10,
+            padding: "8px 14px", color: "var(--text-secondary)", fontSize: 12, fontWeight: 600,
+            fontFamily: FONT_FAMILY, cursor: "pointer",
+          }}>⚙️ 설정</button>
         </div>
       </div>
 
-      {/* 할 일 추가 버튼 */}
-      <div style={{ padding: "12px 24px 0" }}>
-        <button
-          onClick={() => setShowAddModal(true)}
-          style={{
-            width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            padding: "14px 0", borderRadius: 12,
-            border: "1px dashed #d0d5dd", cursor: "pointer",
-            background: "#fff", color: "#999",
-            fontSize: 13, fontWeight: 600, fontFamily: FONT_FAMILY,
-            transition: "background 0.2s, border-color 0.2s, color 0.2s",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "#f0f8ff"; e.currentTarget.style.borderColor = "#0891b266"; e.currentTarget.style.color = "#0891b2"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "#d0d5dd"; e.currentTarget.style.color = "#999"; }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+      {/* Pet 위젯 */}
+      <div style={{ padding: "8px 24px 4px" }}>
+        <PetWidget pet={pet} petType={petType} onClick={() => setShowSettings(true)} />
+      </div>
+
+      {/* 날짜 탭 */}
+      <div style={{ padding: "12px 0 4px", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+        <div style={{ display: "inline-flex", gap: 8, padding: "0 24px" }}>
+          {allDates.map((d) => {
+            const sel = d === selDate;
+            const cnt = tasks.filter((t) => t.date === d).length;
+            return (
+              <button key={d} onClick={() => setSelDate(d)} style={{
+                padding: "10px 18px", borderRadius: 14,
+                border: `1.5px solid ${sel ? "#0891b2" : "var(--border)"}`,
+                background: sel ? "#0891b218" : "var(--card-bg)",
+                color: sel ? "#0891b2" : "var(--text-secondary)",
+                fontSize: 14, fontWeight: sel ? 800 : 500,
+                fontFamily: FONT_FAMILY, cursor: "pointer", flexShrink: 0,
+              }}>
+                {getDateLabel(d)}
+                {cnt > 0 && (
+                  <span style={{
+                    display: "inline-block", marginLeft: 6,
+                    background: sel ? "#0891b2" : "var(--border)",
+                    color: sel ? "#fff" : "var(--text-muted)",
+                    fontSize: 11, fontWeight: 700, borderRadius: 8, padding: "1px 7px",
+                  }}>{cnt}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* AI 스마트 정렬 배너 */}
+      {hasAISort && (
+        <div style={{ padding: "8px 24px" }}>
+          <div style={{
+            background: "#1C7ED611", border: "1px solid #1C7ED622", borderRadius: 12,
+            padding: "10px 14px", display: "flex", alignItems: "center", gap: 10,
+          }}>
+            <span style={{ fontSize: 16 }}>🧠</span>
+            <div>
+              <div style={{ fontSize: 12, color: "#1C7ED6", fontFamily: FONT_FAMILY, fontWeight: 700 }}>AI 스마트 정렬</div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: FONT_FAMILY }}>영업시간·긴급도 기반 순서</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* "가장 먼저" 위젯 */}
+      {nextTask && (
+        <div style={{ padding: "8px 24px" }}>
+          <div style={{
+            background: "var(--card-bg)", borderRadius: 14, padding: "14px 18px",
+            display: "flex", alignItems: "center", gap: 12,
+            border: "1px solid var(--border)", cursor: "pointer",
+          }} onClick={() => handleTaskTap(nextTask)}>
+            <div style={{
+              width: 40, height: 40, borderRadius: 12,
+              background: "linear-gradient(135deg, #0891b222, #0891b244)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+            }}>⏳</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 700 }}>가장 먼저</div>
+              <div style={{
+                fontSize: 11, color: "var(--text-muted)", marginTop: 2,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {nextTask.date !== getDateStr(0) ? getDateLabel(nextTask.date) + " · " : ""}{nextTask.title}
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 20, fontWeight: 900, color: "#0891b2" }}>{nextTask.time || "AI"}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 날짜 섹션 헤더 */}
+      <div style={{
+        padding: "8px 24px 4px", fontSize: 12, fontWeight: 700,
+        color: "var(--text-muted)", letterSpacing: 2,
+        display: "flex", alignItems: "center", gap: 8,
+      }}>
+        <span>{getDateLabel(selDate)} · {filtered.length}개</span>
+        <span style={{ fontSize: 10, color: "#1C7ED6", background: "#1C7ED611", padding: "2px 8px", borderRadius: 4 }}>우선순위순</span>
+        {doneCount > 0 && (
+          <span style={{ fontSize: 10, color: "#2B8A3E", background: "#2B8A3E11", padding: "2px 8px", borderRadius: 4 }}>
+            ✅ {doneCount}개 완료
+          </span>
+        )}
+      </div>
+
+      {/* 태스크 리스트 */}
+      <div style={{ padding: "8px 24px 0" }}>
+        {filtered.map((task, i) => (
+          <TaskCard
+            key={task.id}
+            task={task}
+            rank={i + 1}
+            onDelete={deleteTask}
+            onComplete={completeTask}
+            onPostpone={postponeTask}
+            onAlarm={triggerAlarm}
+            onTap={handleTaskTap}
+          />
+        ))}
+        {filtered.length === 0 && (
+          <div style={{ textAlign: "center", padding: "50px 20px" }}>
+            <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5 }}>🎯</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-muted)", marginBottom: 8 }}>
+              {getDateLabel(selDate)}은 비어있어요
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 플로팅 FAB */}
+      <div style={{ position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)", zIndex: 100 }}>
+        <button onClick={() => setShowAddModal(true)} style={{
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "16px 32px", borderRadius: 50, border: "none",
+          background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "#fff",
+          fontSize: 16, fontWeight: 800, fontFamily: FONT_FAMILY, cursor: "pointer",
+          animation: "floatPulse 3s ease-in-out infinite",
+          boxShadow: "0 8px 32px #0891b255",
+        }}>
+          <span style={{ fontSize: 22, lineHeight: 1 }}>+</span>
           <span>할 일 추가</span>
         </button>
       </div>
 
-      {/* 오늘 */}
-      <div style={{ padding: "20px 24px 4px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-          <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a2e", letterSpacing: 0.5 }}>TODAY</span>
-          <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>{todayTasks.length}</span>
-          {todayDone > 0 && (
-            <span style={{ fontSize: 10, color: "#10b981", background: "#10b98112", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>
-              {todayDone} done
-            </span>
-          )}
-        </div>
-        {todayTasks.length > 0 ? (
-          todayTasks.map((task, i) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onDelete={deleteTask}
-              onComplete={completeTask}
-              onTap={(t) => { setNowTask(t); setSensoryFaded(true); }}
-            />
-          ))
-        ) : (
-          <div style={{ textAlign: "center", padding: "32px 20px" }}>
-            <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.5 }}>✨</div>
-            <div style={{ fontSize: 13, color: "#bbb" }}>오늘 할 일이 없어요</div>
-          </div>
-        )}
-      </div>
-
-      {/* 내일 */}
-      <div style={{ padding: "20px 24px 32px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-          <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a2e", letterSpacing: 0.5 }}>TOMORROW</span>
-          <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>{tomorrowTasks.length}</span>
-          {tomorrowDone > 0 && (
-            <span style={{ fontSize: 10, color: "#10b981", background: "#10b98112", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>
-              {tomorrowDone} done
-            </span>
-          )}
-        </div>
-        {tomorrowTasks.length > 0 ? (
-          tomorrowTasks.map((task, i) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onDelete={deleteTask}
-              onComplete={completeTask}
-              onTap={(t) => { setNowTask(t); setSensoryFaded(true); }}
-            />
-          ))
-        ) : (
-          <div style={{ textAlign: "center", padding: "32px 20px" }}>
-            <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.5 }}>📋</div>
-            <div style={{ fontSize: 13, color: "#bbb" }}>내일 할 일이 없어요</div>
-          </div>
-        )}
-      </div>
-
-
-
-      {/* 감각 전환 배경 — 모달이 열려도 유지, 페이드아웃 */}
-      {sensoryActive && nowTask && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 840,
-          opacity: sensoryFaded ? 0.3 : 1,
-          transition: "opacity 0.8s ease",
-        }}>
-          <SensoryAlarm
-            task={nowTask}
-            media={media}
-            onFinish={handleSensoryFinish}
-          />
-        </div>
+      {/* 알람 → SensoryAlarm */}
+      {activeAlarm && (
+        <SensoryAlarm
+          task={activeAlarm} media={media}
+          snoozeCount={getSnoozeCount(activeAlarm.id)}
+          skipSensory={alarmMode === "urgent"}
+          onDismiss={handleAlarmDismiss} onSnooze={handleAlarmSnooze} onPostpone={handleAlarmPostpone}
+        />
       )}
 
-      {/* 상세 모달 — 감각 전환 위에 표시 */}
-      {nowTask && sensoryFaded && (
-        <NowTaskModal
-          task={nowTask}
-          onConfirm={handleNowDismiss}
+      {/* 태스크 카드 탭 → 바로 정보 */}
+      {tappedTask && !activeAlarm && (
+        <SensoryAlarm
+          task={tappedTask} media={media} snoozeCount={0} skipSensory
+          onDismiss={handleTappedDismiss} onSnooze={handleTappedDismiss} onPostpone={handleTappedPostpone}
         />
       )}
 
       {showAddModal && (
-        <AddTaskModal
-          initDate={today}
-          onAdd={addTask}
-          onClose={() => setShowAddModal(false)}
-        />
+        <AddTaskModal initDate={selDate} onAdd={addTask} onClose={() => setShowAddModal(false)} visitHistory={visitHistory} />
       )}
       {showSettings && (
         <SettingsScreen
-          media={media}
-          setMedia={setMedia}
+          media={media} setMedia={setMedia}
+          pet={pet} setPet={setPet} petType={petType} setPetType={setPetType}
           onClose={() => setShowSettings(false)}
         />
+      )}
+
+      {/* Pet 오버레이 */}
+      {feedOverlay && (
+        <PetFeedOverlay pet={pet} petType={petType} gained={feedOverlay.gained} reason={feedOverlay.reason} onClose={() => setFeedOverlay(null)} />
+      )}
+      {sadOverlay && (
+        <PetSadOverlay pet={pet} petType={petType} lost={sadOverlay.lost} onClose={() => setSadOverlay(null)} />
       )}
     </div>
   );

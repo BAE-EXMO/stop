@@ -6,66 +6,77 @@ import { scheduleAlarm as swScheduleAlarm, onSWMessage } from "../utils/swRegist
 import { takeoverScreen } from "../utils/screenTakeover";
 
 const SNOOZE_STORAGE_KEY = "memchwo-snooze-map";
-const CHECK_INTERVAL_MS = 30000; // 30초마다 체크
-const TRIGGER_WINDOW_MIN = 2; // 출발시각 2분 전부터 트리거
+const SNOOZE_COUNT_KEY = "memchwo-snooze-count";
+const CHECK_INTERVAL_MS = 30000;
 
-/**
- * localStorage 기반 스누즈 맵 관리
- */
+// ─── 스누즈 맵 관리 ───
+
 function loadSnoozeMap() {
   try {
     const stored = localStorage.getItem(SNOOZE_STORAGE_KEY);
     return stored ? JSON.parse(stored) : {};
-  } catch {
-    return {};
-  }
+  } catch { return {}; }
 }
 
 function saveSnoozeMap(map) {
-  try {
-    localStorage.setItem(SNOOZE_STORAGE_KEY, JSON.stringify(map));
-  } catch {
-    // storage full — ignore
-  }
+  try { localStorage.setItem(SNOOZE_STORAGE_KEY, JSON.stringify(map)); }
+  catch { /* ignore */ }
 }
 
-/**
- * 현재 시각을 분 단위로 반환 (0 ~ 1439)
- */
+function loadSnoozeCount() {
+  try {
+    const stored = localStorage.getItem(SNOOZE_COUNT_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch { return {}; }
+}
+
+function saveSnoozeCount(map) {
+  try { localStorage.setItem(SNOOZE_COUNT_KEY, JSON.stringify(map)); }
+  catch { /* ignore */ }
+}
+
+// ─── 시간 유틸 ───
+
 function getCurrentMinutes() {
   const now = new Date();
   return now.getHours() * 60 + now.getMinutes();
 }
 
-/**
- * "HH:MM" 문자열을 분 단위로 변환
- */
 function timeStrToMinutes(timeStr) {
   const [h, m] = timeStr.split(":").map(Number);
   return h * 60 + m;
 }
 
 /**
- * task 목록을 감시하여 출발 시각에 자동으로 알림을 트리거하는 훅.
+ * 3단계 알림 타이밍 + 스누즈 에스컬레이션을 지원하는 알람 스케줄러.
  *
- * @param {Array} tasks - 전체 task 배열
- * @returns {{ activeAlarm, dismissAlarm, snoozeAlarm, triggerAlarm }}
+ * 알림 시퀀스:
+ *   [출발 15분 전] 1차: 사전 안내 (배너만, 감각 전환 없음)
+ *   [출발 5분 전]  2차: 감각 전환 알림 (전체 시퀀스)
+ *   [출발 시각]    3차: 긴급 알림 (감각 전환 스킵, 바로 정보 카드)
+ *
+ * @param {Array} tasks
+ * @returns {{ activeAlarm, alarmMode, snoozeCount, dismissAlarm, snoozeAlarm, postponeAlarm, triggerAlarm }}
  */
 export default function useAlarmScheduler(tasks) {
   const [activeAlarm, setActiveAlarm] = useState(null);
-  const triggeredRef = useRef(new Set()); // 이미 트리거된 task ID
+  const [alarmMode, setAlarmMode] = useState("full"); // "full" | "urgent"
+  const snoozeCountRef = useRef(loadSnoozeCount());
+
+  // triggeredRef: { taskId: { pre15: bool, main5: bool, urgent0: bool } }
+  const triggeredRef = useRef({});
   const snoozeMapRef = useRef(loadSnoozeMap());
 
-  // 앱 시작 시 알림 권한 요청 + SW 메시지 리스너
+  // 알림 권한 + SW 메시지
   useEffect(() => {
     requestNotificationPermission();
 
-    // SW에서 알림 클릭 시 해당 task 알람 표시 + 화면 전환
     const unsubscribe = onSWMessage((data) => {
       if (data?.type === "ALARM_CLICKED" && data.taskId) {
         const task = tasks.find((t) => String(t.id) === String(data.taskId));
         if (task) {
           takeoverScreen();
+          setAlarmMode("full");
           setActiveAlarm(task);
         }
       }
@@ -73,107 +84,175 @@ export default function useAlarmScheduler(tasks) {
     return unsubscribe;
   }, [tasks]);
 
-  // 완료/삭제된 task의 스누즈 엔트리 정리
+  // 완료/삭제된 task 정리
   useEffect(() => {
     const taskIds = new Set(tasks.map((t) => String(t.id)));
-    const map = snoozeMapRef.current;
+    const snoozeMap = snoozeMapRef.current;
+    const snoozeCounts = snoozeCountRef.current;
     let changed = false;
 
-    for (const id of Object.keys(map)) {
+    for (const id of Object.keys(snoozeMap)) {
       if (!taskIds.has(id) || tasks.find((t) => String(t.id) === id)?.completed) {
-        delete map[id];
+        delete snoozeMap[id];
+        delete snoozeCounts[id];
         changed = true;
       }
     }
 
-    if (changed) saveSnoozeMap(map);
+    if (changed) {
+      saveSnoozeMap(snoozeMap);
+      saveSnoozeCount(snoozeCounts);
+    }
   }, [tasks]);
 
   // 30초 간격 스캔
   useEffect(() => {
     const check = () => {
-      if (activeAlarm) return; // 이미 알림 표시 중
+      if (activeAlarm) return;
 
       const now = getCurrentMinutes();
       const today = getDateStr(0);
       const snoozeMap = snoozeMapRef.current;
 
       for (const task of tasks) {
-        // 완료됨, 오늘이 아님, 시간 미지정 → 스킵
         if (task.completed || task.date !== today || !task.time) continue;
 
         const taskId = String(task.id);
 
-        // 스누즈 중이면 만료 여부 확인
+        // 스누즈 체크
         if (snoozeMap[taskId]) {
-          if (Date.now() < snoozeMap[taskId]) continue; // 아직 스누즈 중
-          delete snoozeMap[taskId]; // 스누즈 만료
+          if (Date.now() < snoozeMap[taskId]) continue;
+          delete snoozeMap[taskId];
           saveSnoozeMap(snoozeMap);
-          triggeredRef.current.delete(taskId); // 재트리거 허용
+          // 스누즈 만료 시 해당 단계 재트리거 허용
+          const triggered = triggeredRef.current[taskId] || {};
+          triggered.main5 = false;
+          triggeredRef.current[taskId] = triggered;
         }
 
-        // 이미 트리거됨
-        if (triggeredRef.current.has(taskId)) continue;
-
-        // 출발 시각 계산
+        const triggered = triggeredRef.current[taskId] || { pre15: false, main5: false, urgent0: false };
         const arrivalMinutes = timeStrToMinutes(task.time);
         const departureMinutes = arrivalMinutes - (task.travelTime || 0) - (task.prepTime || 0);
-        const diff = departureMinutes - now;
+        const diff = departureMinutes - now; // 출발까지 남은 분
 
-        // 출발 시각 2분 이내이면 트리거
-        if (diff <= TRIGGER_WINDOW_MIN && diff >= -10) {
-          triggeredRef.current.add(taskId);
+        const categoryInfo = CATEGORIES[task.category] || {};
+        const title = `${categoryInfo.icon || "📌"} ${task.title}`;
 
-          const categoryInfo = CATEGORIES[task.category] || {};
-          const title = `${categoryInfo.icon || "📌"} ${task.title}`;
-          const body = `${task.time}까지 도착 · 지금 출발하세요!`;
+        // ─── 1차: 15분 전 사전 안내 (배너만) ───
+        if (!triggered.pre15 && diff <= 15 && diff > 5) {
+          triggered.pre15 = true;
+          triggeredRef.current[taskId] = triggered;
 
-          // 시스템 알림 (탭 비활성이든 아니든 항상 발송)
-          swScheduleAlarm({
-            id: task.id,
-            title,
-            body,
-            triggerAt: Date.now(),
-          });
+          const body = `${diff}분 후 ${task.title}을 위해 출발해야 합니다`;
+          swScheduleAlarm({ id: task.id, title, body, triggerAt: Date.now() });
           sendNotification(title, body, () => {
             takeoverScreen();
+            setAlarmMode("full");
+            setActiveAlarm(task);
+          });
+          // 배너만 — 전체 화면 전환 없음
+        }
+
+        // ─── 2차: 5분 전 감각 전환 알림 ───
+        if (!triggered.main5 && diff <= 5 && diff > -2) {
+          triggered.main5 = true;
+          triggeredRef.current[taskId] = triggered;
+
+          const body = `${task.time}까지 도착 · 지금 출발하세요!`;
+          swScheduleAlarm({ id: task.id, title, body, triggerAt: Date.now() });
+          sendNotification(title, body, () => {
+            takeoverScreen();
+            setAlarmMode("full");
             setActiveAlarm(task);
           });
 
-          // 화면 강제 전환: 포커스 + 풀스크린 + Wake Lock
           takeoverScreen();
-
+          setAlarmMode("full");
           setActiveAlarm(task);
-          break; // 한 번에 하나만
+          break;
+        }
+
+        // ─── 3차: 출발 시각 긴급 알림 ───
+        if (!triggered.urgent0 && diff <= -2 && diff >= -15) {
+          triggered.urgent0 = true;
+          triggeredRef.current[taskId] = triggered;
+
+          const body = "지금 출발하지 않으면 늦습니다!";
+          swScheduleAlarm({ id: task.id, title: `🚨 ${title}`, body, triggerAt: Date.now() });
+          sendNotification(`🚨 ${title}`, body, () => {
+            takeoverScreen();
+            setAlarmMode("urgent");
+            setActiveAlarm(task);
+          });
+
+          takeoverScreen();
+          setAlarmMode("urgent"); // 감각 전환 스킵
+          setActiveAlarm(task);
+          break;
         }
       }
     };
 
-    check(); // 즉시 1회 실행
+    check();
     const interval = setInterval(check, CHECK_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [tasks, activeAlarm]);
 
   const dismissAlarm = useCallback(() => {
     setActiveAlarm(null);
+    setAlarmMode("full");
   }, []);
 
+  /**
+   * 스누즈 에스컬레이션:
+   *   1회: 5분 후, 동일 감각 전환
+   *   2회: 3분 후, Phase 2 스킵 (snoozeCount로 전달)
+   *   3회: 불가 — onPostpone 사용
+   */
   const snoozeAlarm = useCallback(() => {
     if (!activeAlarm) return;
 
     const taskId = String(activeAlarm.id);
-    const snoozeUntil = Date.now() + 5 * 60 * 1000; // 5분 후
+    const counts = snoozeCountRef.current;
+    const currentCount = counts[taskId] || 0;
+
+    if (currentCount >= 2) return; // 3회째는 스누즈 불가
+
+    const nextCount = currentCount + 1;
+    const delay = nextCount === 1 ? 5 * 60 * 1000 : 3 * 60 * 1000; // 1회: 5분, 2회: 3분
+    const snoozeUntil = Date.now() + delay;
 
     snoozeMapRef.current[taskId] = snoozeUntil;
     saveSnoozeMap(snoozeMapRef.current);
-    triggeredRef.current.delete(taskId); // 재트리거 허용
+
+    counts[taskId] = nextCount;
+    snoozeCountRef.current = counts;
+    saveSnoozeCount(counts);
+
+    // 재트리거 허용
+    const triggered = triggeredRef.current[taskId] || {};
+    triggered.main5 = false;
+    triggeredRef.current[taskId] = triggered;
 
     setActiveAlarm(null);
+    setAlarmMode("full");
   }, [activeAlarm]);
 
+  const getSnoozeCount = useCallback((taskId) => {
+    return snoozeCountRef.current[String(taskId)] || 0;
+  }, []);
+
   const triggerAlarm = useCallback((task) => {
+    setAlarmMode("full");
     setActiveAlarm(task);
   }, []);
 
-  return { activeAlarm, dismissAlarm, snoozeAlarm, triggerAlarm };
+  return {
+    activeAlarm,
+    alarmMode,
+    getSnoozeCount,
+    dismissAlarm,
+    snoozeAlarm,
+    triggerAlarm,
+  };
 }
