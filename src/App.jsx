@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { CATEGORIES } from "./constants/categories";
 import { FONT_FAMILY } from "./constants/fonts";
 import { getDateStr } from "./utils/dateUtils";
-import { calcPriority } from "./utils/priorityUtils";
+import { calcPriority, getPriorityLabel, getDeadlineInfo } from "./utils/priorityUtils";
 import { createSampleTasks } from "./data/sampleTasks";
 import { DEFAULT_VISIT_HISTORY } from "./data/visitHistory";
 import { DEFAULT_MEDIA } from "./data/defaultPhotos";
@@ -19,6 +19,15 @@ import TaskCard from "./components/TaskCard/TaskCard";
 import { takeoverScreen, releaseScreen } from "./utils/screenTakeover";
 import "./styles/global.css";
 
+function getDateLabel(ds) {
+  const t = getDateStr(0), tm = getDateStr(1);
+  if (ds === t) return "오늘";
+  if (ds === tm) return "내일";
+  const d = new Date(ds);
+  const wd = ["일","월","화","수","목","금","토"];
+  return `${d.getMonth()+1}/${d.getDate()} (${wd[d.getDay()]})`;
+}
+
 export default function App() {
   const [tasks, setTasks] = usePersistedState("memchwo-tasks", createSampleTasks);
   const [visitHistory, setVisitHistory] = usePersistedState("memchwo-visit-history", DEFAULT_VISIT_HISTORY);
@@ -29,17 +38,14 @@ export default function App() {
   } = useAlarmScheduler(tasks);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  // 태스크 카드 탭 → 바로 정보 카드 표시 (감각 전환 없이)
   const [tappedTask, setTappedTask] = useState(null);
+  const [selDate, setSelDate] = useState(getDateStr(0));
 
   // PWA 설치 프롬프트
   const [installPrompt, setInstallPrompt] = useState(null);
 
   useEffect(() => {
-    const handler = (e) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
@@ -52,14 +58,8 @@ export default function App() {
   };
 
   // Task CRUD
-  const addTask = (task) => {
-    setTasks((prev) => [...prev, task]);
-    setShowAddModal(false);
-  };
-
-  const deleteTask = (id) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  };
+  const addTask = (task) => { setTasks((prev) => [...prev, task]); setShowAddModal(false); };
+  const deleteTask = (id) => setTasks((prev) => prev.filter((t) => t.id !== id));
 
   const completeTask = (id) => {
     const task = tasks.find((t) => t.id === id);
@@ -80,227 +80,241 @@ export default function App() {
   };
 
   // ─── 알람 핸들러 ───
-
-  const handleAlarmDismiss = () => {
-    dismissAlarm();
-    releaseScreen();
-  };
-
-  const handleAlarmSnooze = () => {
-    snoozeAlarm();
-    releaseScreen();
-  };
-
+  const handleAlarmDismiss = () => { dismissAlarm(); releaseScreen(); };
+  const handleAlarmSnooze = () => { snoozeAlarm(); releaseScreen(); };
   const handleAlarmPostpone = () => {
-    if (activeAlarm) {
-      postponeTask(activeAlarm.id);
-    }
-    dismissAlarm();
-    releaseScreen();
+    if (activeAlarm) postponeTask(activeAlarm.id);
+    dismissAlarm(); releaseScreen();
   };
 
-  // 태스크 카드 탭 → 감각 전환 없이 바로 정보 표시
-  const handleTaskTap = (task) => {
-    setTappedTask(task);
-  };
-
-  const handleTappedDismiss = () => {
-    setTappedTask(null);
-  };
-
+  const handleTaskTap = (task) => setTappedTask(task);
+  const handleTappedDismiss = () => setTappedTask(null);
   const handleTappedPostpone = () => {
-    if (tappedTask) {
-      postponeTask(tappedTask.id);
-    }
+    if (tappedTask) postponeTask(tappedTask.id);
     setTappedTask(null);
   };
 
-  // 감각전환 중 탭이 다시 보이면 풀스크린 재시도
+  // 감각전환 중 탭 visibility
   useEffect(() => {
     if (!activeAlarm) return;
     const onVisible = () => {
-      if (document.visibilityState === "visible" && activeAlarm) {
-        takeoverScreen();
-      }
+      if (document.visibilityState === "visible" && activeAlarm) takeoverScreen();
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, [activeAlarm]);
 
-  // 오늘 / 내일 할 일
-  const today = getDateStr(0);
-  const tomorrow = getDateStr(1);
+  // ─── 날짜 탭 ───
+  const allDates = [...new Set([getDateStr(0), getDateStr(1), ...tasks.map((t) => t.date)])]
+    .filter((d) => d >= getDateStr(0))
+    .sort();
 
-  const buildList = (dateStr) =>
-    tasks
-      .filter((t) => t.date === dateStr)
-      .map((t) => ({ ...t, _priority: calcPriority(t) }))
-      .sort((a, b) => {
-        if (a.completed !== b.completed) return a.completed ? 1 : -1;
-        return b._priority.score - a._priority.score;
-      });
+  // 선택된 날짜의 태스크 (우선순위+마감 부스트 정렬)
+  const filtered = tasks
+    .filter((t) => t.date === selDate)
+    .map((t) => {
+      const p = calcPriority(t);
+      const dl = getDeadlineInfo(t);
+      let bonus = 0;
+      if (dl) {
+        if (dl.urgency >= 3) bonus = 40;
+        else if (dl.urgency >= 2) bonus = 25;
+        else if (dl.urgency >= 1) bonus = 10;
+      }
+      if ((t.postponeCount || 0) >= 3) bonus += 15;
+      else if ((t.postponeCount || 0) >= 2) bonus += 8;
+      return { ...t, _pri: { ...p, score: Math.min(100, p.score + bonus) } };
+    })
+    .sort((a, b) => {
+      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      return b._pri.score - a._pri.score;
+    });
 
-  const todayTasks = buildList(today);
-  const tomorrowTasks = buildList(tomorrow);
+  const doneCount = filtered.filter((t) => t.completed).length;
+  const hasAISort = filtered.length > 1 && filtered.some((t) => !t.time);
 
-  const todayDone = todayTasks.filter((t) => t.completed).length;
-  const tomorrowDone = tomorrowTasks.filter((t) => t.completed).length;
+  // "가장 먼저" — 모든 미래 태스크 중 가장 긴급한 것
+  const nextTask = [...tasks]
+    .filter((t) => !t.completed && t.date >= getDateStr(0))
+    .map((t) => ({ ...t, _pri: calcPriority(t) }))
+    .sort((a, b) => a.date === b.date ? b._pri.score - a._pri.score : a.date.localeCompare(b.date))
+    [0] || null;
 
   return (
-    <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "#f7f8fa", fontFamily: FONT_FAMILY, position: "relative" }}>
+    <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "var(--bg-primary)", fontFamily: FONT_FAMILY, position: "relative", paddingBottom: 100 }}>
       {/* App header */}
       <div style={{ padding: "24px 24px 8px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <div style={{ fontSize: 26, fontWeight: 900, color: "#1a1a2e", lineHeight: 1.2, letterSpacing: -0.5 }}>STOP.</div>
-          <div style={{ fontSize: 12, color: "#999", marginTop: 4, letterSpacing: 1 }}>DO IT NOW</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: "var(--text-primary)", lineHeight: 1.2, letterSpacing: -0.5 }}>STOP.</div>
+          <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, letterSpacing: 1 }}>DO IT NOW</div>
         </div>
         <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
           {installPrompt && (
-            <button
-              onClick={handleInstall}
-              style={{
-                background: "linear-gradient(135deg, #0891b2, #0e7490)", border: "none", borderRadius: 10,
-                padding: "8px 14px", color: "#fff", fontSize: 12, fontWeight: 700,
-                fontFamily: FONT_FAMILY, cursor: "pointer",
-                boxShadow: "0 2px 12px #0891b233",
-              }}
-            >
-              📲 설치
-            </button>
+            <button onClick={handleInstall} style={{
+              background: "linear-gradient(135deg, #0891b2, #0e7490)", border: "none", borderRadius: 10,
+              padding: "8px 14px", color: "#fff", fontSize: 12, fontWeight: 700,
+              fontFamily: FONT_FAMILY, cursor: "pointer", boxShadow: "0 2px 12px #0891b233",
+            }}>📲 설치</button>
           )}
-          <button
-            onClick={() => setShowSettings(true)}
-            style={{
-              background: "#fff", border: "1px solid #e8eaed", borderRadius: 10,
-              padding: "8px 14px", color: "#666", fontSize: 12, fontWeight: 600,
-              fontFamily: FONT_FAMILY, cursor: "pointer",
-              transition: "border-color 0.2s",
-            }}
-          >
-            ⚙️ 설정
-          </button>
+          <button onClick={() => setShowSettings(true)} style={{
+            background: "var(--card-bg)", border: "1px solid var(--border)", borderRadius: 10,
+            padding: "8px 14px", color: "var(--text-secondary)", fontSize: 12, fontWeight: 600,
+            fontFamily: FONT_FAMILY, cursor: "pointer",
+          }}>⚙️ 설정</button>
         </div>
       </div>
 
-      {/* 할 일 추가 버튼 */}
-      <div style={{ padding: "12px 24px 0" }}>
-        <button
-          onClick={() => setShowAddModal(true)}
-          style={{
-            width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-            padding: "14px 0", borderRadius: 12,
-            border: "1px dashed #d0d5dd", cursor: "pointer",
-            background: "#fff", color: "#999",
-            fontSize: 13, fontWeight: 600, fontFamily: FONT_FAMILY,
-            transition: "background 0.2s, border-color 0.2s, color 0.2s",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "#f0f8ff"; e.currentTarget.style.borderColor = "#0891b266"; e.currentTarget.style.color = "#0891b2"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "#d0d5dd"; e.currentTarget.style.color = "#999"; }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+      {/* 날짜 탭 */}
+      <div style={{ padding: "12px 0 4px", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+        <div style={{ display: "inline-flex", gap: 8, padding: "0 24px" }}>
+          {allDates.map((d) => {
+            const sel = d === selDate;
+            const cnt = tasks.filter((t) => t.date === d).length;
+            return (
+              <button key={d} onClick={() => setSelDate(d)} style={{
+                padding: "10px 18px", borderRadius: 14,
+                border: `1.5px solid ${sel ? "#0891b2" : "var(--border)"}`,
+                background: sel ? "#0891b218" : "var(--card-bg)",
+                color: sel ? "#0891b2" : "var(--text-secondary)",
+                fontSize: 14, fontWeight: sel ? 800 : 500,
+                fontFamily: FONT_FAMILY, cursor: "pointer", flexShrink: 0,
+              }}>
+                {getDateLabel(d)}
+                {cnt > 0 && (
+                  <span style={{
+                    display: "inline-block", marginLeft: 6,
+                    background: sel ? "#0891b2" : "var(--border)",
+                    color: sel ? "#fff" : "var(--text-muted)",
+                    fontSize: 11, fontWeight: 700, borderRadius: 8, padding: "1px 7px",
+                  }}>{cnt}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* AI 스마트 정렬 배너 */}
+      {hasAISort && (
+        <div style={{ padding: "8px 24px" }}>
+          <div style={{
+            background: "#1C7ED611", border: "1px solid #1C7ED622", borderRadius: 12,
+            padding: "10px 14px", display: "flex", alignItems: "center", gap: 10,
+          }}>
+            <span style={{ fontSize: 16 }}>🧠</span>
+            <div>
+              <div style={{ fontSize: 12, color: "#1C7ED6", fontFamily: FONT_FAMILY, fontWeight: 700 }}>AI 스마트 정렬</div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: FONT_FAMILY }}>영업시간·긴급도 기반 순서</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* "가장 먼저" 위젯 */}
+      {nextTask && (
+        <div style={{ padding: "8px 24px" }}>
+          <div style={{
+            background: "var(--card-bg)", borderRadius: 14, padding: "14px 18px",
+            display: "flex", alignItems: "center", gap: 12,
+            border: "1px solid var(--border)", cursor: "pointer",
+          }} onClick={() => handleTaskTap(nextTask)}>
+            <div style={{
+              width: 40, height: 40, borderRadius: 12,
+              background: "linear-gradient(135deg, #0891b222, #0891b244)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+            }}>⏳</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 700 }}>가장 먼저</div>
+              <div style={{
+                fontSize: 11, color: "var(--text-muted)", marginTop: 2,
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>
+                {nextTask.date !== getDateStr(0) ? getDateLabel(nextTask.date) + " · " : ""}{nextTask.title}
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 20, fontWeight: 900, color: "#0891b2" }}>{nextTask.time || "AI"}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 날짜 섹션 헤더 */}
+      <div style={{
+        padding: "8px 24px 4px", fontSize: 12, fontWeight: 700,
+        color: "var(--text-muted)", letterSpacing: 2,
+        display: "flex", alignItems: "center", gap: 8,
+      }}>
+        <span>{getDateLabel(selDate)} · {filtered.length}개</span>
+        <span style={{ fontSize: 10, color: "#1C7ED6", background: "#1C7ED611", padding: "2px 8px", borderRadius: 4 }}>우선순위순</span>
+        {doneCount > 0 && (
+          <span style={{ fontSize: 10, color: "#2B8A3E", background: "#2B8A3E11", padding: "2px 8px", borderRadius: 4 }}>
+            ✅ {doneCount}개 완료
+          </span>
+        )}
+      </div>
+
+      {/* 태스크 리스트 */}
+      <div style={{ padding: "8px 24px 0" }}>
+        {filtered.map((task, i) => (
+          <TaskCard
+            key={task.id}
+            task={task}
+            rank={i + 1}
+            onDelete={deleteTask}
+            onComplete={completeTask}
+            onPostpone={postponeTask}
+            onAlarm={triggerAlarm}
+            onTap={handleTaskTap}
+          />
+        ))}
+        {filtered.length === 0 && (
+          <div style={{ textAlign: "center", padding: "50px 20px" }}>
+            <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.5 }}>🎯</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-muted)", marginBottom: 8 }}>
+              {getDateLabel(selDate)}은 비어있어요
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 플로팅 FAB */}
+      <div style={{ position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)", zIndex: 100 }}>
+        <button onClick={() => setShowAddModal(true)} style={{
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "16px 32px", borderRadius: 50, border: "none",
+          background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "#fff",
+          fontSize: 16, fontWeight: 800, fontFamily: FONT_FAMILY, cursor: "pointer",
+          animation: "floatPulse 3s ease-in-out infinite",
+          boxShadow: "0 8px 32px #0891b255",
+        }}>
+          <span style={{ fontSize: 22, lineHeight: 1 }}>+</span>
           <span>할 일 추가</span>
         </button>
       </div>
 
-      {/* 오늘 */}
-      <div style={{ padding: "20px 24px 4px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-          <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a2e", letterSpacing: 0.5 }}>TODAY</span>
-          <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>{todayTasks.length}</span>
-          {todayDone > 0 && (
-            <span style={{ fontSize: 10, color: "#10b981", background: "#10b98112", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>
-              {todayDone} done
-            </span>
-          )}
-        </div>
-        {todayTasks.length > 0 ? (
-          todayTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onDelete={deleteTask}
-              onComplete={completeTask}
-              onTap={handleTaskTap}
-            />
-          ))
-        ) : (
-          <div style={{ textAlign: "center", padding: "32px 20px" }}>
-            <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.5 }}>✨</div>
-            <div style={{ fontSize: 13, color: "#bbb" }}>오늘 할 일이 없어요</div>
-          </div>
-        )}
-      </div>
-
-      {/* 내일 */}
-      <div style={{ padding: "20px 24px 32px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-          <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a2e", letterSpacing: 0.5 }}>TOMORROW</span>
-          <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>{tomorrowTasks.length}</span>
-          {tomorrowDone > 0 && (
-            <span style={{ fontSize: 10, color: "#10b981", background: "#10b98112", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>
-              {tomorrowDone} done
-            </span>
-          )}
-        </div>
-        {tomorrowTasks.length > 0 ? (
-          tomorrowTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onDelete={deleteTask}
-              onComplete={completeTask}
-              onTap={handleTaskTap}
-            />
-          ))
-        ) : (
-          <div style={{ textAlign: "center", padding: "32px 20px" }}>
-            <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.5 }}>📋</div>
-            <div style={{ fontSize: 13, color: "#bbb" }}>내일 할 일이 없어요</div>
-          </div>
-        )}
-      </div>
-
-      {/* 알람 트리거 → SensoryAlarm (5단계 통합) */}
+      {/* 알람 → SensoryAlarm */}
       {activeAlarm && (
         <SensoryAlarm
-          task={activeAlarm}
-          media={media}
+          task={activeAlarm} media={media}
           snoozeCount={getSnoozeCount(activeAlarm.id)}
-          onDismiss={handleAlarmDismiss}
-          onSnooze={handleAlarmSnooze}
-          onPostpone={handleAlarmPostpone}
+          onDismiss={handleAlarmDismiss} onSnooze={handleAlarmSnooze} onPostpone={handleAlarmPostpone}
         />
       )}
 
-      {/* 태스크 카드 탭 → 감각 전환 없이 바로 정보 표시 */}
+      {/* 태스크 카드 탭 → 바로 정보 */}
       {tappedTask && !activeAlarm && (
         <SensoryAlarm
-          task={tappedTask}
-          media={media}
-          snoozeCount={0}
-          skipSensory
-          onDismiss={handleTappedDismiss}
-          onSnooze={handleTappedDismiss}
-          onPostpone={handleTappedPostpone}
+          task={tappedTask} media={media} snoozeCount={0} skipSensory
+          onDismiss={handleTappedDismiss} onSnooze={handleTappedDismiss} onPostpone={handleTappedPostpone}
         />
       )}
 
       {showAddModal && (
-        <AddTaskModal
-          initDate={today}
-          onAdd={addTask}
-          onClose={() => setShowAddModal(false)}
-        />
+        <AddTaskModal initDate={selDate} onAdd={addTask} onClose={() => setShowAddModal(false)} />
       )}
       {showSettings && (
-        <SettingsScreen
-          media={media}
-          setMedia={setMedia}
-          onClose={() => setShowSettings(false)}
-        />
+        <SettingsScreen media={media} setMedia={setMedia} onClose={() => setShowSettings(false)} />
       )}
     </div>
   );

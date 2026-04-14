@@ -1,12 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
+/* ─── CSS Theme Variables ─── */
+
+:root {
+  --bg-primary: #f7f8fa;
+  --bg-secondary: #fff;
+  --card-bg: #fff;
+  --card-done-bg: #f0fdf4;
+  --border: #e8eaed;
+  --text-primary: #1a1a2e;
+  --text-secondary: #888;
+  --text-muted: #bbb;
+  --accent: #0891b2;
+  --input-bg: #f7f8fa;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: #f7f8fa;
+  background: var(--bg-primary);
 }
 
 ::-webkit-scrollbar {
