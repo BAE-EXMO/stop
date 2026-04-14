@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import sharedStyles from "../../styles/shared.module.css";
 import styles from "./SettingsScreen.module.css";
 import { PET_TYPES, getPetMood, getPetStage } from "../../utils/petSystem";
@@ -21,10 +21,13 @@ export default function SettingsScreen({ media, setMedia, pet, setPet, petType, 
   const [audioUrl, setAudioUrl] = useState(() => localStorage.getItem(AUDIO_STORAGE_KEY) || "");
   const [editingPetName, setEditingPetName] = useState(false);
   const [petNameInput, setPetNameInput] = useState(pet?.name || "");
+  const [hasChanges, setHasChanges] = useState(false);
+  const markChanged = () => setHasChanges(true);
 
   const savePetName = () => {
     if (setPet) setPet((p) => ({ ...p, name: petNameInput.trim() || p.name }));
     setEditingPetName(false);
+    markChanged();
   };
 
   const saveAudioUrl = (url) => {
@@ -34,17 +37,25 @@ export default function SettingsScreen({ media, setMedia, pet, setPet, petType, 
     } else {
       localStorage.removeItem(AUDIO_STORAGE_KEY);
     }
+    markChanged();
   };
 
   const addMedia = () => {
     if (newUrl.trim()) {
       setMedia((prev) => [...prev, { url: newUrl.trim(), type: newType }]);
       setNewUrl("");
+      markChanged();
     }
   };
 
   const removeMedia = (index) => {
     setMedia((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== index)));
+    markChanged();
+  };
+
+  const handlePetTypeChange = (type) => {
+    setPetType(type);
+    markChanged();
   };
 
   return (
@@ -56,7 +67,9 @@ export default function SettingsScreen({ media, setMedia, pet, setPet, petType, 
             <div className={styles.headerTitle}>설정</div>
             <div className={styles.headerSub}>감각 전환 알림 설정</div>
           </div>
-          <button className={styles.closeBtn} onClick={onClose}>닫기</button>
+          <button className={styles.closeBtn} onClick={onClose} style={hasChanges ? { background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "#fff", border: "none" } : undefined}>
+            {hasChanges ? "설정완료" : "닫기"}
+          </button>
         </div>
 
         {/* Explanation */}
@@ -118,7 +131,7 @@ export default function SettingsScreen({ media, setMedia, pet, setPet, petType, 
                     borderColor: petType === k ? "#0891b2" : "var(--border)",
                     background: petType === k ? "#0891b215" : "transparent",
                   }}
-                  onClick={() => setPetType(k)}
+                  onClick={() => handlePetTypeChange(k)}
                 >
                   <div style={{ fontSize: 28, marginBottom: 4 }}>{v.emoji}</div>
                   <div style={{
