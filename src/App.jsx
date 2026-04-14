@@ -10,11 +10,14 @@ import usePersistedState from "./hooks/usePersistedState";
 import useAlarmScheduler from "./hooks/useAlarmScheduler";
 import { recordVisit } from "./utils/visitHistoryManager";
 import { recordTaskAction } from "./utils/behaviorTracker";
+import { DEFAULT_PET, calcReward, POSTPONE_PENALTY } from "./utils/petSystem";
 
 import SensoryAlarm from "./components/SensoryAlarm/SensoryAlarm";
 import SettingsScreen from "./components/SettingsScreen/SettingsScreen";
 import AddTaskModal from "./components/AddTaskModal/AddTaskModal";
 import TaskCard from "./components/TaskCard/TaskCard";
+import PetWidget from "./components/PetWidget/PetWidget";
+import { PetFeedOverlay, PetSadOverlay } from "./components/PetOverlay/PetOverlay";
 
 import { takeoverScreen, releaseScreen } from "./utils/screenTakeover";
 import "./styles/global.css";
@@ -40,6 +43,12 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [tappedTask, setTappedTask] = useState(null);
   const [selDate, setSelDate] = useState(getDateStr(0));
+
+  // Pet 시스템
+  const [pet, setPet] = usePersistedState("memchwo-pet", DEFAULT_PET);
+  const [petType, setPetType] = usePersistedState("memchwo-pet-type", "dog");
+  const [feedOverlay, setFeedOverlay] = useState(null);
+  const [sadOverlay, setSadOverlay] = useState(null);
 
   // PWA 설치 프롬프트
   const [installPrompt, setInstallPrompt] = useState(null);
@@ -67,6 +76,17 @@ export default function App() {
     setVisitHistory((hist) => recordVisit(hist, task.location, task));
     recordTaskAction(task.category, "completed");
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, completed: true } : t)));
+
+    // Pet 보상
+    const { gained, reason } = calcReward(task, pet.streak);
+    setPet((p) => ({
+      ...p,
+      hp: Math.min(100, p.hp + gained),
+      xp: p.xp + gained,
+      completions: p.completions + 1,
+      streak: p.streak + 1,
+    }));
+    setFeedOverlay({ gained, reason });
   };
 
   const postponeTask = (id) => {
@@ -77,6 +97,10 @@ export default function App() {
         t.id === id ? { ...t, date: getDateStr(1), postponeCount: (t.postponeCount || 0) + 1 } : t
       )
     );
+
+    // Pet 벌칙
+    setPet((p) => ({ ...p, hp: Math.max(0, p.hp - POSTPONE_PENALTY), streak: 0 }));
+    setSadOverlay({ lost: POSTPONE_PENALTY });
   };
 
   // ─── 알람 핸들러 ───
@@ -162,6 +186,11 @@ export default function App() {
             fontFamily: FONT_FAMILY, cursor: "pointer",
           }}>⚙️ 설정</button>
         </div>
+      </div>
+
+      {/* Pet 위젯 */}
+      <div style={{ padding: "8px 24px 4px" }}>
+        <PetWidget pet={pet} petType={petType} onClick={() => setShowSettings(true)} />
       </div>
 
       {/* 날짜 탭 */}
@@ -314,7 +343,19 @@ export default function App() {
         <AddTaskModal initDate={selDate} onAdd={addTask} onClose={() => setShowAddModal(false)} />
       )}
       {showSettings && (
-        <SettingsScreen media={media} setMedia={setMedia} onClose={() => setShowSettings(false)} />
+        <SettingsScreen
+          media={media} setMedia={setMedia}
+          pet={pet} setPet={setPet} petType={petType} setPetType={setPetType}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
+
+      {/* Pet 오버레이 */}
+      {feedOverlay && (
+        <PetFeedOverlay pet={pet} petType={petType} gained={feedOverlay.gained} reason={feedOverlay.reason} onClose={() => setFeedOverlay(null)} />
+      )}
+      {sadOverlay && (
+        <PetSadOverlay pet={pet} petType={petType} lost={sadOverlay.lost} onClose={() => setSadOverlay(null)} />
       )}
     </div>
   );
