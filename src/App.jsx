@@ -165,7 +165,7 @@ export default function App() {
   );
 
   return (
-    <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "var(--bg-primary)", fontFamily: FONT_FAMILY, position: "relative", paddingBottom: 100 }}>
+    <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: "var(--bg-primary)", fontFamily: FONT_FAMILY, position: "relative", paddingBottom: 120 }}>
       {/* App header */}
       <div style={{ padding: "24px 24px 8px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
@@ -230,10 +230,9 @@ export default function App() {
         display: "flex", alignItems: "center", gap: 8,
       }}>
         <span>{getDateLabel(selDate)} · {filtered.length}개</span>
-        <span style={{ fontSize: 10, color: "#1C7ED6", background: "#1C7ED611", padding: "2px 8px", borderRadius: 4 }}>우선순위순</span>
         {doneCount > 0 && (
-          <span style={{ fontSize: 10, color: "#2B8A3E", background: "#2B8A3E11", padding: "2px 8px", borderRadius: 4 }}>
-            ✅ {doneCount}개 완료
+          <span style={{ fontSize: 10, color: "var(--text-muted)", background: "var(--border)", padding: "2px 8px", borderRadius: 4 }}>
+            {doneCount}개 완료
           </span>
         )}
       </div>
@@ -247,8 +246,6 @@ export default function App() {
             rank={i + 1}
             onDelete={deleteTask}
             onComplete={completeTask}
-            onPostpone={postponeTask}
-            onAlarm={triggerAlarm}
             onTap={handleTaskTap}
           />
         ))}
